@@ -1,0 +1,96 @@
+import { TetrisBoardPiece } from './TetrisBoardPiece';
+import { PieceEnum } from './pieceData';
+import { encoder, Field } from 'tetris-fumen';
+import type { Fumen } from './types';
+
+export class TetrisBoard {
+  public width: number;
+  public height: number;
+  private board: number[][] = new Array<number[]>();
+
+  constructor(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+
+    // initialize board with all 0
+    this.reset();
+  }
+
+  /**
+   * Check if given row is full
+   */
+  lineFull(row: number): boolean {
+    if (row < 0 || row >= this.height) {
+      throw new RangeError(`Given row out of bounds of 0-${this.height}`);
+    }
+
+    return this.board[row].every((cell) => cell != 0);
+  }
+
+  /**
+   * Clears a row, doesn't check if filled
+   */
+  lineclear(row: number): void {
+    if (row < 0 || row >= this.height) {
+      throw new RangeError(`Given row out of bounds of 0-${this.height}`);
+    }
+
+    this.board[this.height - 1] = new Array(this.width).fill(0);
+    for (let i = row; i < this.height - 1; i++) {
+      this.board[i] = this.board[i + 1];
+    }
+  }
+
+  at(row: number, col: number): number {
+    if (row < 0 || row >= this.height) {
+      throw new RangeError(`Given row out of bounds of 0-${this.height}`);
+    }
+    if (col < 0 || col >= this.width) {
+      throw new RangeError(`Given col out of bounds of 0-${this.width}`);
+    }
+
+    return this.board[row][col];
+  }
+
+  isFilled(row: number, col: number): boolean {
+    return this.at(row, col) !== 0;
+  }
+
+  // return lines that are cleared
+  place(piece: TetrisBoardPiece, clear: boolean = false): number[] {
+    const lineclears: number[] = [];
+    for (const { x, y } of piece.getMinos()) {
+      this.board[y][x] = piece.type;
+      if (clear && this.lineFull(y)) {
+        lineclears.push(y);
+        this.lineclear(y);
+      }
+    }
+    return lineclears;
+  }
+
+  clearPiece(piece: TetrisBoardPiece): void {
+    for (const { x, y } of piece.getMinos()) this.board[y][x] = PieceEnum.X;
+  }
+
+  isEmpty(): boolean {
+    return this.board.flat().reduce((sum, c) => sum + c, 0) == 0;
+  }
+
+  toFumen(): Fumen {
+    const cellToFumenCell = (cell: number) => (cell == 0 ? '_' : PieceEnum[cell]);
+    const field = this.board
+      .map((row) => row.map(cellToFumenCell).join(''))
+      .toReversed()
+      .join('');
+    return encoder.encode([{ field: Field.create(field) }]) as Fumen;
+  }
+
+  reset(): void {
+    this.board = Array.from({ length: this.height }, () => new Array(this.width).fill(0));
+  }
+
+  toString(): string {
+    return this.board.map((row) => row.map((val: PieceEnum) => PieceEnum[val]).join('')).join('\n');
+  }
+}

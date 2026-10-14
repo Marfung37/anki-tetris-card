@@ -1,0 +1,15 @@
+{
+  "controls": {
+    "left": "ArrowLeft",
+    "right": "ArrowRight",
+    "hold": "KeyC",
+    "cw": "KeyX",
+    "ccw": "KeyZ",
+    "180": "ShiftLeft",
+    "sd": "ArrowDown",
+    "hd": "ArrowUp",
+    "d1": "KeyD",
+    "reset": "KeyR",
+    "undo": "Ctrl+Z"
+  }
+}

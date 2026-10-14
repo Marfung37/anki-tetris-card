@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <h1>{{Queue}}</h1>
+    <h1>{{Field}}</h1>
+    <h1>{{Goal}}</h1>
+
+    <div class="relative z-1 flex flex-col items-center">
+      <div
+        id="game-container"
+        class="flex items-start p-4"
+        on:keydown={handleKeyDown}
+        on:keyup={handleKeyUp}
+        tabindex="0"
+        aria-label="Tetris game"
+        role="button"
+      >
+        <canvas id="hold" class="rounded bg-[#2e3440] px-2 py-4"></canvas>
+        <canvas id="board" class="mx-1 rounded border-0 bg-[#2e3440]"
+        ></canvas>
+
+        <div class="flex flex-col gap-2">
+          <div>
+            <canvas id="queue" class="rounded bg-[#2e3440] px-2 py-4"
+            ></canvas>
+          </div>
+        </div>
+      </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
