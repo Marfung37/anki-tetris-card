@@ -2,12 +2,13 @@ import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { get_colour, PieceEnum, Rotation } from './pieceData';
 import { TetrisQueue } from './TetrisQueue';
 import { TetrisBoard } from './TetrisBoard';
-import { TetrisGame } from './TetrisGame';
+import { TetrisGame, type Tuning } from './TetrisGame';
 import { type Action, type Bindings, keybinds } from './Keybind';
 import { PCSIZE, BOARDHEIGHT } from './constants';
 
 interface GameConfig {
-  controls: Bindings
+  controls: Bindings;
+  tuning: Tuning;
 }
 
 declare global {
@@ -39,10 +40,8 @@ let showAnswer = false;
 const CELL_SIZE = 24;
 
 const controls = window.config.controls;
+const tuning = window.config.tuning;
 keybinds.reset(controls);
-
-// DEBUG
-console.log(keybinds)
 
 boardCanvas.width = PCSIZE * CELL_SIZE;
 boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
@@ -65,8 +64,7 @@ gameCtn.addEventListener("keydown", handleKeyDown)
 gameCtn.addEventListener("keyup", handleKeyUp)
 
 game = new TetrisGame();
-
-game.loadHandling();
+game.loadHandling(tuning);
 
 let frame: DOMHighResTimeStamp;
 const loop = (timestamp: number) => {
@@ -90,7 +88,11 @@ frame = requestAnimationFrame(loop);
 // return () => cancelAnimationFrame(frame); // Cleanup on destroy
 
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.code == 'KeyZ' && event.ctrlKey) actions.add('undo');
+  if (event.code == 'KeyZ' && event.ctrlKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    actions.add('undo');
+  }
   else actions.add(keybinds.lookup[event.code]);
   // You can also stop scrolling with space/arrows here
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {

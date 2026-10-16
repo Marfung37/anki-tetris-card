@@ -12,6 +12,12 @@ const PREVIEWSIZE = 5;
 const INITIALY = 19;
 const INITIALX = 4;
 
+export interface Tuning {
+  arr: number;
+  sdArr: number;
+  das: number;
+}
+
 export const DEFAULT = {
   arr: 0,
   sdArr: 0,
@@ -32,7 +38,7 @@ export class TetrisGame {
 
   softReset: boolean = false;
 
-  handling: Record<string, number>;
+  handling: Tuning;
   storageKey: string;
 
   pieceCount: number;
@@ -55,7 +61,7 @@ export class TetrisGame {
 
   constructor(
     pattern: string = '',
-    handling: Record<string, number> = DEFAULT,
+    handling: Tuning = DEFAULT,
     storageKey: string = 'handling'
   ) {
     this.handling = handling;
@@ -428,17 +434,7 @@ export class TetrisGame {
     }
   }
 
-  saveHandling() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.handling));
-  }
-
-  loadHandling(): void {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      if (!raw) return;
-      this.handling = JSON.parse(raw);
-    } catch (e) {
-      console.error(e);
-    }
+  loadHandling(handling: Tuning): void {
+    this.handling = handling;
   }
 }

@@ -3524,7 +3524,6 @@ ${end}`);
   var CELL_SIZE = 24;
   var controls = window.config.controls;
   keybinds.reset(controls);
-  console.log(keybinds);
   boardCanvas.width = PCSIZE * CELL_SIZE;
   boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
   queueCanvas.width = 4 * CELL_SIZE;
@@ -3556,8 +3555,11 @@ ${end}`);
   };
   frame = requestAnimationFrame(loop);
   function handleKeyDown(event) {
-    if (event.code == "KeyZ" && event.ctrlKey) actions.add("undo");
-    else actions.add(keybinds.lookup[event.code]);
+    if (event.code == "KeyZ" && event.ctrlKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      actions.add("undo");
+    } else actions.add(keybinds.lookup[event.code]);
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
       event.preventDefault();
     }

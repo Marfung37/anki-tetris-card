@@ -12,7 +12,7 @@ card_fields = {
 }
 
 config = mw.addonManager.getConfig(__name__)
-controls_json = json.dumps(config)
+config_json = json.dumps(config)
 
 addon_dir = Path(__file__).parent
 html = (addon_dir / "web" / "index.html").read_text(encoding="utf-8")
@@ -28,7 +28,7 @@ html = html.replace('src="app.js"', f'src="{asset_url}/app.js"')
 # inject config into the html
 config_script = f"""
 <script>
-    window.config = {controls_json};
+    window.config = {config_json};
 </script>
 """
 

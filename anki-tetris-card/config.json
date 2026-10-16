@@ -11,5 +11,10 @@
     "d1": "KeyD",
     "reset": "KeyR",
     "undo": "Ctrl+Z"
+  },
+  "tuning": {
+    "arr": 0,
+    "sdArr": 0,
+    "das": 100
   }
 }
