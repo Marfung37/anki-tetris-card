@@ -1,4 +1,4 @@
-import { TetrisGame, DEFAULT, type Event, type Mode } from './TetrisGame';
+import { TetrisGame, DEFAULT, type Event, type Mode, type Tuning } from './TetrisGame';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { BAG } from './constants';
 import {
@@ -51,7 +51,7 @@ export class TetrisSetupQuiz extends TetrisGame {
 
   constructor(
     pattern: string = '',
-    handling: Record<string, number> = DEFAULT,
+    handling: Tuning = DEFAULT,
     storageKey: string = 'handling'
   ) {
     super(pattern, handling, storageKey);

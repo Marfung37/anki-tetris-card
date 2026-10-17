@@ -3126,7 +3126,6 @@ ${end}`);
       __publicField(this, "random");
       __publicField(this, "seed");
       __publicField(this, "simulating");
-      __publicField(this, "mode");
       __publicField(this, "held");
       __publicField(this, "timers");
       __publicField(this, "parsedQueuePattern");
@@ -3134,7 +3133,6 @@ ${end}`);
       __publicField(this, "operations");
       this.handling = handling;
       this.storageKey = storageKey;
-      this.mode = "practice";
       this.pieceCount = 0;
       this.totalPieceCount = 0;
       this.pendingEvents = [];
@@ -3215,10 +3213,6 @@ ${end}`);
       return ghost;
     }
     hold() {
-      if (this.held) {
-        return;
-      }
-      this.held = this.mode === "pure";
       if (this.holdPiece === 0 /* X */) {
         if (this.queue.length == 0) {
           this.setActive(this.active.type);
@@ -3277,21 +3271,18 @@ ${end}`);
         if (this.holdPiece != 0 /* X */) {
           this.setActive(this.holdPiece);
           this.holdPiece = 0 /* X */;
-        } else if (this.mode === "practice") {
+        } else {
           this.reset(this.softReset);
         }
       } else {
         this.setActive(this.queue.poll());
-      }
-      if (this.mode === "practice" && this.board.isEmpty()) {
-        this.reset(this.softReset);
       }
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
     }
     undo() {
-      if (this.mode === "pure" || this.operations.length == 0) return;
+      if (this.operations.length == 0) return;
       this.random.seed(this.seed);
       this.operations.pop();
       this.reset();
@@ -3439,17 +3430,8 @@ ${end}`);
         this.timers["sd"] = -1;
       }
     }
-    saveHandling() {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.handling));
-    }
-    loadHandling() {
-      try {
-        const raw = localStorage.getItem(this.storageKey);
-        if (!raw) return;
-        this.handling = JSON.parse(raw);
-      } catch (e) {
-        console.error(e);
-      }
+    loadHandling(handling) {
+      this.handling = handling;
     }
   };
 
@@ -3523,6 +3505,7 @@ ${end}`);
   var actions = /* @__PURE__ */ new Set();
   var CELL_SIZE = 24;
   var controls = window.config.controls;
+  var tuning = window.config.tuning;
   keybinds.reset(controls);
   boardCanvas.width = PCSIZE * CELL_SIZE;
   boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
@@ -3539,7 +3522,7 @@ ${end}`);
   gameCtn.addEventListener("keydown", handleKeyDown);
   gameCtn.addEventListener("keyup", handleKeyUp);
   game = new TetrisGame();
-  game.loadHandling();
+  game.loadHandling(tuning);
   var frame;
   var loop = (timestamp) => {
     game.tick(timestamp, actions);
@@ -3657,4 +3640,5 @@ ${end}`);
     context.fillText("OUT OF FOCUS", context.canvas.width / 2, context.canvas.height / 2);
     context.setTransform(transform);
   }
+  pycmd("");
 })();

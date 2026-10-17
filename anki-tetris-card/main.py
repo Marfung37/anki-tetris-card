@@ -13,6 +13,12 @@ card_fields = {
 
 config = mw.addonManager.getConfig(__name__)
 config_json = json.dumps(config)
+parameters = {
+  "pattern": "{{Queue}}",
+  "initialFumen": "{{Field}}",
+  "targetFumen": "{{Answer}}",
+}
+parameters_json = json.dumps(parameters)
 
 addon_dir = Path(__file__).parent
 html = (addon_dir / "web" / "index.html").read_text(encoding="utf-8")
@@ -29,6 +35,7 @@ html = html.replace('src="app.js"', f'src="{asset_url}/app.js"')
 config_script = f"""
 <script>
     window.config = {config_json};
+    window.parameters = {parameters_json};
 </script>
 """
 
@@ -78,3 +85,15 @@ def setup_tetris_card():
 
 
 gui_hooks.profile_did_open.append(setup_tetris_card)
+
+
+def on_js_message(handled, message, context):
+  if message == "tetris:answer":
+    # Handle the game being solved.
+    print("Test")
+    return (True, None)
+
+  return handled
+
+
+gui_hooks.webview_did_receive_js_message.append(on_js_message)

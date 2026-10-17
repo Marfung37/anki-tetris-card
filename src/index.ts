@@ -2,20 +2,9 @@ import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { get_colour, PieceEnum, Rotation } from './pieceData';
 import { TetrisQueue } from './TetrisQueue';
 import { TetrisBoard } from './TetrisBoard';
-import { TetrisGame, type Tuning } from './TetrisGame';
-import { type Action, type Bindings, keybinds } from './Keybind';
+import { TetrisGame } from './TetrisGame';
+import { type Action, keybinds } from './Keybind';
 import { PCSIZE, BOARDHEIGHT } from './constants';
-
-interface GameConfig {
-  controls: Bindings;
-  tuning: Tuning;
-}
-
-declare global {
-  interface Window {
-    config: GameConfig;
-  }
-}
 
 const gameCtn = document.querySelector<HTMLDivElement>("#game-container");
 const boardCanvas = document.querySelector<HTMLCanvasElement>("#board");
@@ -257,3 +246,5 @@ function drawOOF(context: CanvasRenderingContext2D) {
   context.fillText('OUT OF FOCUS', context.canvas.width / 2, context.canvas.height / 2);
   context.setTransform(transform);
 }
+
+pycmd("")

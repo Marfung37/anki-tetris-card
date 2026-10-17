@@ -27,8 +27,6 @@ export const DEFAULT = {
 type MovementAction = Extract<Action, 'left' | 'right' | 'sd'>;
 
 export type Event = string;
-export type Mode = string | 'pure' | 'practice';
-export const MODES: Mode[] = ['pure', 'practice'];
 
 export class TetrisGame {
   board: TetrisBoard;
@@ -51,7 +49,6 @@ export class TetrisGame {
 
   protected simulating: boolean;
 
-  protected mode: string | 'pure' | 'practice';
   protected held!: boolean;
   private timers!: Record<MovementAction, number>;
 
@@ -66,7 +63,6 @@ export class TetrisGame {
   ) {
     this.handling = handling;
     this.storageKey = storageKey;
-    this.mode = 'practice';
     this.pieceCount = 0;
     this.totalPieceCount = 0;
 
@@ -167,10 +163,6 @@ export class TetrisGame {
   }
 
   hold(): void {
-    if (this.held) {
-      return;
-    }
-    this.held = this.mode === 'pure';
     if (this.holdPiece === PieceEnum.X) {
       if (this.queue.length == 0) {
         this.setActive(this.active.type);
@@ -244,17 +236,12 @@ export class TetrisGame {
       if (this.holdPiece != PieceEnum.X) {
         this.setActive(this.holdPiece);
         this.holdPiece = PieceEnum.X;
-      } else if (this.mode === 'practice') {
+      } else {
         // no more pieces
         this.reset(this.softReset);
       }
     } else {
       this.setActive(this.queue.poll());
-    }
-
-    // practice pc
-    if (this.mode === 'practice' && this.board.isEmpty()) {
-      this.reset(this.softReset);
     }
 
     // topped out
@@ -264,7 +251,7 @@ export class TetrisGame {
   }
 
   undo(): void {
-    if (this.mode === 'pure' || this.operations.length == 0) return;
+    if (this.operations.length == 0) return;
 
     this.random.seed(this.seed);
 
