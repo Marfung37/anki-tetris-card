@@ -1,5 +1,4 @@
-from aqt import mw
-from aqt import gui_hooks
+from aqt import mw, gui_hooks, reviewer
 from pathlib import Path
 import json
 from . import constants
@@ -9,6 +8,7 @@ card_fields = {
   "Field": "A fumen with one page for the initial state of the board, empty implies an empty board.",
   "Goal": "A description of the goal.",
   "Answer": "A (multipage) fumen for the accepted final state(s) of the board.",
+  "Refill Bags": "Continue providing pieces after queue with bags. (T/F) ",
 }
 
 config = mw.addonManager.getConfig(__name__)
@@ -17,6 +17,7 @@ parameters = {
   "pattern": "{{Queue}}",
   "initialFumen": "{{Field}}",
   "targetFumen": "{{Answer}}",
+  "fillBag": "{{Refill Bags}}",
 }
 parameters_json = json.dumps(parameters)
 
@@ -88,9 +89,11 @@ gui_hooks.profile_did_open.append(setup_tetris_card)
 
 
 def on_js_message(handled, message, context):
+  if not isinstance(context, reviewer.Reviewer):
+    return handled
+
   if message == "tetris:answer":
-    # Handle the game being solved.
-    print("Test")
+    context._showAnswer()
     return (True, None)
 
   return handled

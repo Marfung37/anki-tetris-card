@@ -1,6 +1,6 @@
 import { decoder, encoder, Field, type Page, type Mino } from 'tetris-fumen';
 import type { Fumen } from './types';
-import { PCSIZE, mirrorPieces } from './constants';
+import { BAG, PCSIZE, mirrorPieces } from './constants';
 
 function getFieldHeight(field: Field): number {
   return field.str({ reduced: true, garbage: false }).split('\n').length;
@@ -56,8 +56,8 @@ export function decodeWrapper(fumen: Fumen): Page[] {
   let pages: Page[];
   try {
     pages = decoder.decode(fumen);
-  } catch (_err) {
-    throw new Error(`Fumen ${fumen} could not be decoded`);
+  } catch (err) {
+    throw new Error(`Fumen ${fumen} could not be decoded: ${(err as Error).stack}`);
   }
 
   return pages;
@@ -230,36 +230,27 @@ export function fumenGetNumPages(fumen: Fumen): number {
 }
 
 // count from first page number of each piece
-export function fumenCountPieces(fumen: Fumen): Record<string, number> {
+export function fumenCountPieces(fumen: Fumen, frequencyCounter: Uint8Array): void {
   const pages = decodeWrapper(fumen);
   const field = pages[0].field;
   const height = getFieldHeight(field);
 
-  // check if there's enough minos of each color to place pieces
-  const frequencyCounter: Record<string, number> = {
-    T: 0,
-    I: 0,
-    L: 0,
-    J: 0,
-    S: 0,
-    Z: 0,
-    O: 0
-  };
+  for (const piece of BAG) {
+    frequencyCounter[piece.charCodeAt(0)] = 0;
+  }
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < PCSIZE; x++) {
       const mino = field.at(x, y);
       if (mino != '_' && mino != 'X') {
-        frequencyCounter[mino]++;
+        frequencyCounter[mino.charCodeAt(0)]++;
       }
     }
   }
 
-  for (const piece in frequencyCounter) {
-    frequencyCounter[piece] >>= 2;
+  for (const piece of BAG) {
+    frequencyCounter[piece.charCodeAt(0)] >>= 2;
   }
-
-  return frequencyCounter;
 }
 
 // clear only lines specify in lines

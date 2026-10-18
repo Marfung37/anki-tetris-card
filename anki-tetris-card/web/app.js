@@ -174,8 +174,8 @@
       var InnerField = (
         /** @class */
         (function() {
-          function InnerField2(_a) {
-            var _b = _a.field, field = _b === void 0 ? InnerField2.create(FieldConstants.PlayBlocks) : _b, _c = _a.garbage, garbage = _c === void 0 ? InnerField2.create(FieldConstants.Width) : _c;
+          function InnerField2(_a2) {
+            var _b = _a2.field, field = _b === void 0 ? InnerField2.create(FieldConstants.PlayBlocks) : _b, _c = _a2.garbage, garbage = _c === void 0 ? InnerField2.create(FieldConstants.Width) : _c;
             this.field = field;
             this.garbage = garbage;
           }
@@ -191,15 +191,15 @@
           InnerField2.prototype.canFill = function(piece, rotation, x, y) {
             var _this = this;
             var positions = getBlockPositions(piece, rotation, x, y);
-            return positions.every(function(_a) {
-              var px = _a[0], py = _a[1];
+            return positions.every(function(_a2) {
+              var px = _a2[0], py = _a2[1];
               return 0 <= px && px < 10 && 0 <= py && py < FieldConstants.Height && _this.getNumberAt(px, py) === defines_1.Piece.Empty;
             });
           };
           InnerField2.prototype.canFillAll = function(positions) {
             var _this = this;
-            return positions.every(function(_a) {
-              var x = _a.x, y = _a.y;
+            return positions.every(function(_a2) {
+              var x = _a2.x, y = _a2.y;
               return 0 <= x && x < 10 && 0 <= y && y < FieldConstants.Height && _this.getNumberAt(x, y) === defines_1.Piece.Empty;
             });
           };
@@ -272,8 +272,8 @@
       var PlayField = (
         /** @class */
         (function() {
-          function PlayField2(_a) {
-            var pieces = _a.pieces, _b = _a.length, length = _b === void 0 ? FieldConstants.PlayBlocks : _b;
+          function PlayField2(_a2) {
+            var pieces = _a2.pieces, _b = _a2.length, length = _b === void 0 ? FieldConstants.PlayBlocks : _b;
             if (pieces !== void 0) {
               this.pieces = pieces;
             } else {
@@ -323,8 +323,8 @@
           PlayField2.prototype.setAt = function(index, piece) {
             this.pieces[index] = piece;
           };
-          PlayField2.prototype.fill = function(_a) {
-            var type = _a.type, rotation = _a.rotation, x = _a.x, y = _a.y;
+          PlayField2.prototype.fill = function(_a2) {
+            var type = _a2.type, rotation = _a2.rotation, x = _a2.x, y = _a2.y;
             var blocks = getBlocks(type, rotation);
             for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
               var block = blocks_1[_i];
@@ -334,7 +334,7 @@
           };
           PlayField2.prototype.fillAll = function(positions, type) {
             for (var _i = 0, positions_1 = positions; _i < positions_1.length; _i++) {
-              var _a = positions_1[_i], x = _a.x, y = _a.y;
+              var _a2 = positions_1[_i], x = _a2.x, y = _a2.y;
               this.set(x, y, type);
             }
           };
@@ -523,11 +523,11 @@
           Buffer3.prototype.poll = function(max) {
             var value = 0;
             for (var count = 0; count < max; count += 1) {
-              var v = this.values.shift();
-              if (v === void 0) {
+              var v2 = this.values.shift();
+              if (v2 === void 0) {
                 throw new Error("Unexpected fumen");
               }
-              value += v * Math.pow(Buffer3.tableLength, count);
+              value += v2 * Math.pow(Buffer3.tableLength, count);
             }
             return value;
           };
@@ -542,8 +542,8 @@
             }
           };
           Buffer3.prototype.merge = function(postBuffer) {
-            for (var _i = 0, _a = postBuffer.values; _i < _a.length; _i++) {
-              var value = _a[_i];
+            for (var _i = 0, _a2 = postBuffer.values; _i < _a2.length; _i++) {
+              var value = _a2[_i];
               this.values.push(value);
             }
           };
@@ -571,8 +571,8 @@
         })()
       );
       exports.Buffer = Buffer2;
-      function decodeToValue(v) {
-        return ENCODE_TABLE.indexOf(v);
+      function decodeToValue(v2) {
+        return ENCODE_TABLE.indexOf(v2);
       }
       function encodeFromValue(index) {
         return ENCODE_TABLE[index];
@@ -667,8 +667,8 @@
           return { x, y };
         }
         return {
-          decode: function(v) {
-            var value = v;
+          decode: function(v2) {
+            var value = v2;
             var type = decodePiece(value % 8);
             value = Math.floor(value / 8);
             var rotation = decodeRotation(value % 4);
@@ -731,8 +731,8 @@
           }
           return (fieldTop - y - 1) * width + x;
         }
-        function encodeRotation(_a) {
-          var type = _a.type, rotation = _a.rotation;
+        function encodeRotation(_a2) {
+          var type = _a2.type, rotation = _a2.rotation;
           if (!(0, defines_1.isMinoPiece)(type)) {
             return 0;
           }
@@ -784,9 +784,9 @@
       var MAX_COMMENT_CHAR_VALUE = COMMENT_TABLE.length + 1;
       var createCommentParser = function() {
         return {
-          decode: function(v) {
+          decode: function(v2) {
             var str = "";
-            var value = v;
+            var value = v2;
             for (var count = 0; count < 4; count += 1) {
               var index = value % MAX_COMMENT_CHAR_VALUE;
               str += COMMENT_TABLE[index];
@@ -1067,26 +1067,26 @@
       function toMino(operationOrMino) {
         return operationOrMino instanceof Mino ? operationOrMino.copy() : Mino.from(operationOrMino);
       }
-      var Field2 = (
+      var Field4 = (
         /** @class */
         (function() {
-          function Field3(field) {
+          function Field5(field) {
             this.field = field;
           }
-          Field3.create = function(field, garbage) {
-            return new Field3(new inner_field_1.InnerField({
+          Field5.create = function(field, garbage) {
+            return new Field5(new inner_field_1.InnerField({
               field: field !== void 0 ? inner_field_1.PlayField.load(field) : void 0,
               garbage: garbage !== void 0 ? inner_field_1.PlayField.loadMinify(garbage) : void 0
             }));
           };
-          Field3.prototype.canFill = function(operation) {
+          Field5.prototype.canFill = function(operation) {
             if (operation === void 0) {
               return true;
             }
             var mino = toMino(operation);
             return this.field.canFillAll(mino.positions());
           };
-          Field3.prototype.canLock = function(operation) {
+          Field5.prototype.canLock = function(operation) {
             if (operation === void 0) {
               return true;
             }
@@ -1095,7 +1095,7 @@
             }
             return !this.canFill(__assign(__assign({}, operation), { y: operation.y - 1 }));
           };
-          Field3.prototype.fill = function(operation, force) {
+          Field5.prototype.fill = function(operation, force) {
             if (force === void 0) {
               force = false;
             }
@@ -1109,7 +1109,7 @@
             this.field.fillAll(mino.positions(), (0, defines_1.parsePiece)(mino.type));
             return mino;
           };
-          Field3.prototype.put = function(operation) {
+          Field5.prototype.put = function(operation) {
             if (operation === void 0) {
               return void 0;
             }
@@ -1123,19 +1123,19 @@
             }
             throw Error("Cannot put piece on field");
           };
-          Field3.prototype.clearLine = function() {
+          Field5.prototype.clearLine = function() {
             this.field.clearLine();
           };
-          Field3.prototype.at = function(x, y) {
+          Field5.prototype.at = function(x, y) {
             return (0, defines_1.parsePieceName)(this.field.getNumberAt(x, y));
           };
-          Field3.prototype.set = function(x, y, type) {
+          Field5.prototype.set = function(x, y, type) {
             this.field.setNumberAt(x, y, (0, defines_1.parsePiece)(type));
           };
-          Field3.prototype.copy = function() {
-            return new Field3(this.field.copy());
+          Field5.prototype.copy = function() {
+            return new Field5(this.field.copy());
           };
-          Field3.prototype.str = function(option) {
+          Field5.prototype.str = function(option) {
             if (option === void 0) {
               option = {};
             }
@@ -1159,10 +1159,10 @@
             }
             return output;
           };
-          return Field3;
+          return Field5;
         })()
       );
-      exports.Field = Field2;
+      exports.Field = Field4;
       var Mino = (
         /** @class */
         (function() {
@@ -1198,8 +1198,8 @@
             } catch (e) {
               return false;
             }
-            return this.positions().every(function(_a) {
-              var x = _a.x, y = _a.y;
+            return this.positions().every(function(_a2) {
+              var x = _a2.x, y = _a2.y;
               return 0 <= x && x < 10 && 0 <= y && y < 23;
             });
           };
@@ -1286,7 +1286,7 @@
       }
       exports.extract = extract;
       function decode(fumen) {
-        var _a = extract(fumen), version = _a.version, data = _a.data;
+        var _a2 = extract(fumen), version = _a2.version, data = _a2.data;
         switch (version) {
           case "115":
             return innerDecode(data, 23);
@@ -1479,7 +1479,7 @@
       };
       function encode(pages) {
         var updateField = function(prev, current) {
-          var _a = encodeField(prev, current), changed = _a.changed, values = _a.values;
+          var _a2 = encodeField(prev, current), changed = _a2.changed, values = _a2.values;
           if (changed) {
             buffer.merge(values);
             lastRepeatIndex = -1;
@@ -2108,10 +2108,11 @@
     "#5e81ac",
     "#a3be8c",
     "#bf616a",
-    "#ebcb8b"
+    "#ebcb8b",
+    "#868686"
   ];
   var PieceEnum = /* @__PURE__ */ ((PieceEnum3) => {
-    PieceEnum3[PieceEnum3["X"] = 0] = "X";
+    PieceEnum3[PieceEnum3["_"] = 0] = "_";
     PieceEnum3[PieceEnum3["T"] = 1] = "T";
     PieceEnum3[PieceEnum3["I"] = 2] = "I";
     PieceEnum3[PieceEnum3["L"] = 3] = "L";
@@ -2119,8 +2120,16 @@
     PieceEnum3[PieceEnum3["S"] = 5] = "S";
     PieceEnum3[PieceEnum3["Z"] = 6] = "Z";
     PieceEnum3[PieceEnum3["O"] = 7] = "O";
+    PieceEnum3[PieceEnum3["X"] = 8] = "X";
     return PieceEnum3;
   })(PieceEnum || {});
+  var Rotation = /* @__PURE__ */ ((Rotation3) => {
+    Rotation3[Rotation3["spawn"] = 0] = "spawn";
+    Rotation3[Rotation3["right"] = 1] = "right";
+    Rotation3[Rotation3["reverse"] = 2] = "reverse";
+    Rotation3[Rotation3["left"] = 3] = "left";
+    return Rotation3;
+  })(Rotation || {});
   function get_colour(piece) {
     return colour_table[piece];
   }
@@ -2240,7 +2249,9 @@
     set(queue) {
       this.length = queue.length;
       this.pos = 0;
-      this.queue = [...queue].map(get_piece_number);
+      for (let i = 0; i < Math.min(queue.length, this.queue.length); i++) {
+        this.queue[i] = get_piece_number(queue[i]);
+      }
     }
     setFillBags(value) {
       this.fillBags = value;
@@ -2248,7 +2259,70 @@
   };
 
   // src/TetrisBoard.ts
+  var import_tetris_fumen2 = __toESM(require_tetris_fumen(), 1);
+
+  // src/fumenUtils.ts
   var import_tetris_fumen = __toESM(require_tetris_fumen(), 1);
+
+  // src/constants.ts
+  var BAG = "TILJSZO";
+  var PCSIZE = 10;
+  var BOARDHEIGHT = 20;
+
+  // src/fumenUtils.ts
+  function getFieldHeight(field) {
+    return field.str({ reduced: true, garbage: false }).split("\n").length;
+  }
+  function decodeWrapper(fumen) {
+    let pages;
+    try {
+      pages = import_tetris_fumen.decoder.decode(fumen);
+    } catch (err) {
+      throw new Error(`Fumen ${fumen} could not be decoded: ${err.stack}`);
+    }
+    return pages;
+  }
+  function fumenSplit(fumen) {
+    const pages = decodeWrapper(fumen);
+    const fumens = [];
+    for (const page of pages) {
+      fumens.push(import_tetris_fumen.encoder.encode([page]));
+    }
+    return fumens;
+  }
+  function fumenCountPieces(fumen, frequencyCounter) {
+    const pages = decodeWrapper(fumen);
+    const field = pages[0].field;
+    const height = getFieldHeight(field);
+    for (const piece of BAG) {
+      frequencyCounter[piece.charCodeAt(0)] = 0;
+    }
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < PCSIZE; x++) {
+        const mino = field.at(x, y);
+        if (mino != "_" && mino != "X") {
+          frequencyCounter[mino.charCodeAt(0)]++;
+        }
+      }
+    }
+    for (const piece of BAG) {
+      frequencyCounter[piece.charCodeAt(0)] >>= 2;
+    }
+  }
+  function fumenClearLines(fumen, lines) {
+    const pages = decodeWrapper(fumen);
+    for (const page of pages) {
+      const rows = page.field.str({ garbage: false }).split("\n");
+      const height = rows.length;
+      for (const line of lines) {
+        rows.splice(height - 1 - line, 1);
+      }
+      page.field = import_tetris_fumen.Field.create(rows.join(""));
+    }
+    return import_tetris_fumen.encoder.encode(pages);
+  }
+
+  // src/TetrisBoard.ts
   var TetrisBoard = class {
     constructor(width, height) {
       __publicField(this, "width");
@@ -2265,7 +2339,7 @@
       if (row < 0 || row >= this.height) {
         throw new RangeError(`Given row out of bounds of 0-${this.height}`);
       }
-      return this.board[row].every((cell) => cell != 0);
+      return this.board[row].every((cell) => cell != 0 /* _ */);
     }
     /**
      * Clears a row, doesn't check if filled
@@ -2274,7 +2348,7 @@
       if (row < 0 || row >= this.height) {
         throw new RangeError(`Given row out of bounds of 0-${this.height}`);
       }
-      this.board[this.height - 1] = new Array(this.width).fill(0);
+      this.board[this.height - 1] = new Array(this.width).fill(0 /* _ */);
       for (let i = row; i < this.height - 1; i++) {
         this.board[i] = this.board[i + 1];
       }
@@ -2304,33 +2378,42 @@
       return lineclears;
     }
     clearPiece(piece) {
-      for (const { x, y } of piece.getMinos()) this.board[y][x] = 0 /* X */;
+      for (const { x, y } of piece.getMinos()) this.board[y][x] = 0 /* _ */;
     }
     isEmpty() {
-      return this.board.flat().reduce((sum, c) => sum + c, 0) == 0;
+      return this.board.flat().reduce((sum, c) => sum + c, 0) == 0 /* _ */;
+    }
+    fromFumen(fumen) {
+      const fumenCellToCell = (cell) => PieceEnum[cell];
+      const rows = decodeWrapper(fumen)[0].field.str({ reduced: true, garbage: false }).split("\n");
+      for (let i = 0; i < rows.length; i++) {
+        for (let j = 0; j < this.width; j++) {
+          this.board[i][j] = fumenCellToCell(rows[rows.length - 1 - i][j]);
+        }
+      }
     }
     toFumen() {
-      const cellToFumenCell = (cell) => cell == 0 ? "_" : PieceEnum[cell];
+      const cellToFumenCell = (cell) => PieceEnum[cell];
       const field = this.board.map((row) => row.map(cellToFumenCell).join("")).toReversed().join("");
-      return import_tetris_fumen.encoder.encode([{ field: import_tetris_fumen.Field.create(field) }]);
+      return import_tetris_fumen2.encoder.encode([{ field: import_tetris_fumen2.Field.create(field) }]);
     }
     reset() {
-      this.board = Array.from({ length: this.height }, () => new Array(this.width).fill(0));
+      this.board = Array.from({ length: this.height }, () => new Array(this.width).fill(0 /* _ */));
     }
     toString() {
-      return this.board.map((row) => row.map((val) => PieceEnum[val]).join("")).join("\n");
+      return this.board.toReversed().map((row) => row.map((val) => PieceEnum[val]).join("")).join("\n");
     }
   };
 
   // src/random.ts
-  function sfc32(a, b, c, d) {
+  function sfc32(a, b, c, d2) {
     return function() {
       a |= 0;
       b |= 0;
       c |= 0;
-      d |= 0;
-      const t = (a + b | 0) + d | 0;
-      d = d + 1 | 0;
+      d2 |= 0;
+      const t = (a + b | 0) + d2 | 0;
+      d2 = d2 + 1 | 0;
       a = b ^ b >>> 9;
       b = c + (c << 3) | 0;
       c = c << 21 | c >>> 11;
@@ -2439,8 +2522,8 @@
         const end2 = findEndFilterContext(text, i);
         tokens.push(LBRACE_TOKEN);
         const insideFilter = text.slice(i + 1, end2);
-        for (const m of insideFilter.matchAll(FILTER_REGEX)) {
-          const groups = m.groups;
+        for (const m2 of insideFilter.matchAll(FILTER_REGEX)) {
+          const groups = m2.groups;
           if (!groups) continue;
           const kind = Object.keys(groups).find((key) => groups[key] !== void 0);
           let value = groups[kind];
@@ -2449,7 +2532,7 @@
             value = value.slice(1, -1);
           }
           if (kind === "MISMATCH") {
-            throw new Error(`Unexpected character '${value}' at position ${m.index}`);
+            throw new Error(`Unexpected character '${value}' at position ${m2.index}`);
           }
           tokens.push(new Token(kind, value));
         }
@@ -2462,14 +2545,14 @@
       let end = i + 1;
       while (end < text.length && text[end] !== "{") end++;
       const genBlock = text.slice(i, end);
-      for (const m of genBlock.matchAll(GEN_REGEX)) {
-        const groups = m.groups;
+      for (const m2 of genBlock.matchAll(GEN_REGEX)) {
+        const groups = m2.groups;
         if (!groups) continue;
         const kind = Object.keys(groups).find((key) => groups[key] !== void 0);
         const value = groups[kind];
         if (kind === "WS") continue;
         if (kind === "MISMATCH") {
-          throw new Error(`Unexpected character '${value}' at position ${m.index}`);
+          throw new Error(`Unexpected character '${value}' at position ${m2.index}`);
         }
         tokens.push(new Token(kind, value));
       }
@@ -2852,11 +2935,11 @@ ${end}`);
   for (let i = 1; i < 8; i++) {
     factorials[i] *= factorials[i - 1];
   }
-  function perm(n, k) {
-    if (k === void 0) k = n;
-    if (n <= 7) return factorials[n] / factorials[n - k];
+  function perm(n, k2) {
+    if (k2 === void 0) k2 = n;
+    if (n <= 7) return factorials[n] / factorials[n - k2];
     let result = n;
-    for (let i = n - 1; i > k; i--) {
+    for (let i = n - 1; i > k2; i--) {
       result *= i;
     }
     return result;
@@ -2872,8 +2955,8 @@ ${end}`);
     const isValidPermutation = (limit) => {
       let usedMask = 0;
       let result = "";
-      for (let k = 0; k < limit; k++) {
-        const originalIndex = indices[k];
+      for (let k2 = 0; k2 < limit; k2++) {
+        const originalIndex = indices[k2];
         const pieceType = pool[originalIndex];
         let prevIdx = originalIndex - 1;
         while (prevIdx >= 0 && pool[prevIdx] === pieceType) {
@@ -3060,6 +3143,19 @@ ${end}`);
     }
     return parsed;
   }
+  function sfinderPieces(parsedPattern) {
+    const runningParts = [];
+    for (const appendingParts of parsedPattern) {
+      const runningQueues = [];
+      for (const blocks of appendingParts) {
+        runningQueues.push(evaluateBlocks(blocks));
+      }
+      for (const queue of product(runningQueues)) {
+        runningParts.push(queue);
+      }
+    }
+    return runningParts;
+  }
   function randomSfinderPieces(parsedPattern, random) {
     if (parsedPattern.length == 0) return null;
     const weights = [];
@@ -3097,28 +3193,23 @@ ${end}`);
     return choices[i];
   }
 
-  // src/constants.ts
-  var PCSIZE = 10;
-  var BOARDHEIGHT = 20;
-
   // src/TetrisGame.ts
   var PREVIEWSIZE = 5;
   var INITIALY = 19;
   var INITIALX = 4;
-  var DEFAULT = {
+  var DEFAULT_TUNING = {
     arr: 0,
     sdArr: 0,
     das: 80
   };
   var TetrisGame = class {
-    constructor(pattern = "", handling = DEFAULT, storageKey = "handling") {
+    constructor(pattern = "", fillBags = false, handling = DEFAULT_TUNING) {
       __publicField(this, "board");
       __publicField(this, "queue");
       __publicField(this, "holdPiece");
       __publicField(this, "active");
       __publicField(this, "softReset", false);
       __publicField(this, "handling");
-      __publicField(this, "storageKey");
       __publicField(this, "pieceCount");
       __publicField(this, "totalPieceCount");
       __publicField(this, "pendingEvents");
@@ -3131,34 +3222,35 @@ ${end}`);
       __publicField(this, "parsedQueuePattern");
       __publicField(this, "currentQueue");
       __publicField(this, "operations");
+      __publicField(this, "fillBags");
       this.handling = handling;
-      this.storageKey = storageKey;
       this.pieceCount = 0;
       this.totalPieceCount = 0;
       this.pendingEvents = [];
       this.random = new PRNG();
-      this.seed = [-1, -1, -1, -1];
+      this.seed = this.random.reseed();
       this.simulating = false;
       this.queue = new TetrisQueue(PREVIEWSIZE, this.random);
       this.board = new TetrisBoard(PCSIZE, BOARDHEIGHT + 1);
       this.operations = [];
       this.parsedQueuePattern = null;
       this.currentQueue = null;
-      this.setPattern(pattern);
+      this.fillBags = fillBags;
+      this.parsedQueuePattern = parsePattern(pattern);
+      this.queue.setFillBags(this.fillBags);
+    }
+    generateQueue() {
+      return randomSfinderPieces(this.parsedQueuePattern, this.random.randInt);
     }
     setPattern(pattern) {
       if (pattern.length > 0) {
         this.parsedQueuePattern = parsePattern(pattern);
-        const queue = randomSfinderPieces(this.parsedQueuePattern, this.random.randInt);
-        if (queue === null) {
-          throw new Error("Pattern generates no queues");
-        }
-        this.queue.setFillBags(false);
+        this.queue.setFillBags(this.fillBags);
       }
       this.fullReset();
     }
     setActive(piece) {
-      if (piece == 0 /* X */) throw new Error("Unable to set active piece as gotten invalid piece");
+      if ([0 /* _ */, 8 /* X */].includes(piece)) throw new Error("Unable to set active piece as gotten invalid piece");
       this.active = new TetrisBoardPiece(INITIALX, INITIALY, piece, 0 /* spawn */);
     }
     fullReset() {
@@ -3190,10 +3282,11 @@ ${end}`);
       this.setActive(this.queue.poll());
     }
     regen() {
-      this.currentQueue = randomSfinderPieces(
-        this.parsedQueuePattern,
-        this.random.randInt
-      );
+      const queue = this.generateQueue();
+      if (queue === null) {
+        throw new Error("Pattern generates no queues");
+      }
+      this.currentQueue = queue;
       this.queue.set(this.currentQueue);
     }
     checkCollide(piece) {
@@ -3213,7 +3306,7 @@ ${end}`);
       return ghost;
     }
     hold() {
-      if (this.holdPiece === 0 /* X */) {
+      if (this.holdPiece === 0 /* _ */) {
         if (this.queue.length == 0) {
           this.setActive(this.active.type);
           return;
@@ -3254,7 +3347,7 @@ ${end}`);
     down() {
       this.movePiece(0, -1);
     }
-    lock(piece = null) {
+    harddrop(piece = null, clear = true) {
       if (piece !== null) {
         this.active.x = piece.x;
         this.active.y = piece.y;
@@ -3264,19 +3357,26 @@ ${end}`);
         this.held = false;
         this.operations.push(this.active.copy());
       }
-      this.board.place(this.active, true);
       this.pieceCount++;
       this.totalPieceCount++;
+      return this.board.place(this.active, clear);
+    }
+    getNextPiece(resetted) {
       if (this.queue.length == 0) {
-        if (this.holdPiece != 0 /* X */) {
+        if (this.holdPiece != 0 /* _ */) {
           this.setActive(this.holdPiece);
-          this.holdPiece = 0 /* X */;
+          this.holdPiece = 0 /* _ */;
         } else {
           this.reset(this.softReset);
         }
-      } else {
+      }
+      if (!resetted) {
         this.setActive(this.queue.poll());
       }
+    }
+    lock(piece = null) {
+      this.harddrop(piece);
+      this.getNextPiece(false);
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -3288,6 +3388,9 @@ ${end}`);
       this.reset();
       this.simulating = true;
       this.totalPieceCount = 0;
+      if (this.holdPiece == 0 /* _ */) {
+        this.hold();
+      }
       for (const piece of this.operations) {
         if (this.active.type !== piece.type) {
           if (this.holdPiece !== piece.type) {
@@ -3435,14 +3538,666 @@ ${end}`);
     }
   };
 
+  // node_modules/glue-fumen/dist/index.js
+  var import_tetris_fumen3 = __toESM(require_tetris_fumen(), 1);
+  var import_tetris_fumen4 = __toESM(require_tetris_fumen(), 1);
+  var import_tetris_fumen5 = __toESM(require_tetris_fumen(), 1);
+  var import_tetris_fumen6 = __toESM(require_tetris_fumen(), 1);
+  var h = ((u) => (u[u._ = 0] = "_", u[u.T = 1] = "T", u[u.I = 2] = "I", u[u.L = 3] = "L", u[u.J = 4] = "J", u[u.S = 5] = "S", u[u.Z = 6] = "Z", u[u.O = 7] = "O", u[u.X = 8] = "X", u))(h || {});
+  var M = ((r) => (r[r.spawn = 0] = "spawn", r[r.right = 1] = "right", r[r.reverse = 2] = "reverse", r[r.left = 3] = "left", r))(M || {});
+  var H = [[], [[[1, 0], [2, 0], [1, 1], [0, 0]], [[0, 1], [0, 2], [1, 1], [0, 0]], [[0, 1], [1, 1], [-1, 1], [0, 0]], [[0, 1], [0, 2], [-1, 1], [0, 0]]], [[[1, 0], [2, 0], [3, 0], [0, 0]], [[0, 2], [0, 1], [0, 3], [0, 0]]], [[[1, 0], [2, 1], [2, 0], [0, 0]], [[0, 1], [0, 2], [1, 0], [0, 0]], [[1, 1], [2, 1], [0, 1], [0, 0]], [[0, 1], [-1, 2], [0, 2], [0, 0]]], [[[1, 0], [2, 0], [0, 1], [0, 0]], [[0, 1], [1, 2], [0, 2], [0, 0]], [[-1, 1], [0, 1], [-2, 1], [0, 0]], [[1, 1], [1, 2], [1, 0], [0, 0]]], [[[1, 0], [1, 1], [2, 1], [0, 0]], [[-1, 1], [0, 1], [-1, 2], [0, 0]]], [[[0, 0], [0, 1], [-1, 1], [1, 0]], [[0, 1], [1, 1], [1, 2], [0, 0]]], [[[0, 0], [0, 1], [1, 1], [1, 0]]]];
+  function K(n, e) {
+    let t = H[n], o = t.length;
+    return e %= o, t[e];
+  }
+  function W(n, e) {
+    let t = H[n].length;
+    return Math.floor(e / t);
+  }
+  function te(n, e, t, o) {
+    let r = K(t, o), i = W(t, o), [s, a] = r[i];
+    return { x: n + s, y: e + a };
+  }
+  function G(n) {
+    try {
+      return import_tetris_fumen4.decoder.decode(n);
+    } catch (e) {
+      throw new Error(`Fumen '${n}' could not be decoded`, { cause: e });
+    }
+  }
+  var I = new Uint8Array(256);
+  I[84] = 1;
+  I[73] = 1;
+  I[76] = 1;
+  I[74] = 1;
+  I[83] = 1;
+  I[90] = 1;
+  I[79] = 1;
+  function ne(n) {
+    return I[n.charCodeAt(0)] == 1;
+  }
+  function D(n) {
+    return (n & 7) != 0;
+  }
+  function oe(n, e, t = 20) {
+    return 0 <= n && n < 10 && 0 <= e && e < t;
+  }
+  function F(n, e) {
+    let t = (1 << n + 1) - 1;
+    for (; (e & t) > 0; ) {
+      for (; (e & t) > 0; ) e &= e - 1, n++;
+      t = (1 << n + 1) - 1;
+    }
+    return n;
+  }
+  function v(n, e) {
+    let t = 0;
+    for (; e > 0; ) {
+      let o = 31 - Math.clz32(e);
+      n.isLineClear(o) && (t |= 1 << o), e &= ~(1 << o);
+    }
+    return t;
+  }
+  function re(n, e) {
+    for (; e > 0; ) {
+      let t = 31 - Math.clz32(e);
+      n.lineClear(t), e &= ~(1 << t);
+    }
+  }
+  var ie = Math.pow(2, 9);
+  var se = 1400 * 4;
+  var V = new Float64Array(se).fill(NaN);
+  var d = class {
+    constructor() {
+    }
+    static positions(e, t, o, r) {
+      let i = e * 560 + t * 28 + o * 4 + r;
+      if (i >= se) return -1;
+      if (!isNaN(V[i])) return V[i];
+      let s = K(o, r), a = W(o, r), [c, u] = s[a], p = 0;
+      for (let [O, g] of s) {
+        let y = e + O - c, x = t + g - u;
+        if (!oe(y, x)) {
+          p = -1;
+          break;
+        }
+        let P = (y << 5) + x;
+        p *= ie, p += P;
+      }
+      return V[i] = p, p;
+    }
+    static getMino(e) {
+      let t = e & 31;
+      return { x: e >> 5 & 15, y: t };
+    }
+    static nextMino(e) {
+      return Math.floor(e / ie);
+    }
+  };
+  var l = class {
+    constructor() {
+    }
+    static encode(e) {
+      let t = h[e.type];
+      return t = (t << 2) + M[e.rotation], t = (t << 4) + e.x, t = (t << 5) + e.y, t;
+    }
+    static decode(e) {
+      let t = e & 31;
+      e >>= 5;
+      let o = e & 15;
+      e >>= 4;
+      let r = M[e & 3];
+      return e >>= 2, { type: h[e & 7], rotation: r, x: o, y: t };
+    }
+    static getY(e) {
+      return e & 31;
+    }
+    static getX(e) {
+      return e >> 5 & 15;
+    }
+    static getRotation(e) {
+      return e >> 9 & 3;
+    }
+    static getPiece(e) {
+      return e >> 11 & 7;
+    }
+    static setY(e, t) {
+      return e & -32 | t;
+    }
+    static setX(e, t) {
+      return e & -481 | t << 5;
+    }
+    static setRotation(e, t) {
+      return e & -1537 | t << 9;
+    }
+    static setPiece(e, t) {
+      return e & -14337 | t << 11;
+    }
+    static positions(e) {
+      let t = this.getX(e), o = this.getY(e), r = this.getPiece(e), i = this.getRotation(e);
+      return d.positions(t, o, r, i);
+    }
+  };
+  var _e = 4;
+  var ce = 16;
+  var q = 15;
+  var X = new Float32Array(10).map((n, e) => Math.pow(2, (10 - e - 1) * _e));
+  var _a;
+  var E = (_a = class {
+    constructor(e, t = 20) {
+      __publicField(this, "field");
+      __publicField(this, "height");
+      this.field = new Array(t).fill(0);
+      let o = e.str({ garbage: false, reduced: true });
+      if (!o) {
+        this.height = 0;
+        return;
+      }
+      let r = o.split(`
+`).slice(-t);
+      this.height = Math.min(r.length, t);
+      for (let i = 0; i < this.height; i++) {
+        let s = r[this.height - i - 1];
+        for (let a = 0; a < 10; a++) this.field[i] *= ce, this.field[i] += h[s[a]];
+      }
+    }
+    toField() {
+      let e = "";
+      for (let t = this.height - 1; t >= 0; t--) {
+        let o = this.field[t], r = "";
+        for (let i = 0; i < 10; i++) r = h[o & q] + r, o = Math.floor(o / ce);
+        e += r;
+      }
+      return import_tetris_fumen5.Field.create(e);
+    }
+    at(e, t) {
+      return ~~(this.field[t] / X[e]) & q;
+    }
+    unset(e, t) {
+      let o = ~~(this.field[t] / X[e]) & q;
+      this.field[t] -= o * X[e];
+    }
+    set(e, t, o) {
+      this.height = t + 1 > this.height ? t + 1 : this.height, this.field[t] += h[o] * X[e];
+    }
+    getHeight() {
+      return this.height;
+    }
+    isLineClear(e) {
+      let t = this.field[e], o = t & 1048575, r = Math.floor(t / 1048576), i = (o + _a.NOT_HIGH_BITS_MASK & _a.HIGH_BITS_MASK) === _a.HIGH_BITS_MASK, s = (r + _a.NOT_HIGH_BITS_MASK & _a.HIGH_BITS_MASK) === _a.HIGH_BITS_MASK;
+      return i && s;
+    }
+    lineClear(e) {
+      this.field.copyWithin(e, e + 1, this.height + 1), this.height--;
+    }
+    copy() {
+      let e = Object.create(Object.getPrototypeOf(this));
+      return e.height = this.height, e.field = this.field.slice(), e;
+    }
+  }, __publicField(_a, "HIGH_BITS_MASK", 559240), __publicField(_a, "NOT_HIGH_BITS_MASK", 489335), _a);
+  var R = class {
+    constructor(e = 1024) {
+      __publicField(this, "storage");
+      __publicField(this, "head", 0);
+      __publicField(this, "tail", 0);
+      __publicField(this, "size", 0);
+      __publicField(this, "capacity");
+      this.capacity = e, this.storage = new Int32Array(this.capacity);
+    }
+    enqueue(e) {
+      this.size === this.capacity && this.resize(), this.storage[this.tail] = e, this.tail = (this.tail + 1) % this.capacity, this.size++;
+    }
+    dequeue() {
+      let e = this.storage[this.head];
+      return this.head = (this.head + 1) % this.capacity, this.size--, e;
+    }
+    resize() {
+      let e = this.capacity;
+      this.capacity *= 2;
+      let t = new Int32Array(this.capacity);
+      for (let o = 0; o < this.size; o++) t[o] = this.storage[(this.head + o) % e];
+      this.storage = t, this.head = 0, this.tail = this.size;
+    }
+    isEmpty() {
+      return this.size === 0;
+    }
+  };
+  var U = new Int32Array(512);
+  var ue = 6;
+  var m = new Int16Array(ue);
+  var Se = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]], [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]]];
+  var Te = [[[0, 0], [-1, 0], [2, 0], [-1, 0], [2, 0]], [[-1, 0], [0, 0], [0, 0], [0, 1], [0, -2]], [[-1, 1], [1, 1], [-2, 1], [1, 0], [-2, 0]], [[0, 1], [0, 1], [0, 1], [0, -1], [0, 2]]];
+  var Ae = [[[0, 0]], [[0, -1]], [[-1, -1]], [[-1, 0]]];
+  var He = [[[0, 0], [0, 1]], [[0, 0], [1, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]];
+  var Fe = [[[1, -1], [1, 0]], [[-1, -1], [0, -1]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]];
+  var Re = [[[1, 1]], [[1, -1]], [[0, 0]], [[0, 0]]];
+  function Z(n, e) {
+    let t = new Array(4);
+    for (let o = 0; o < 4; o++) {
+      t[o] = new Array(4), t[o][o] = [[0, 0]];
+      let r = de(o);
+      t[o][r] = n[o].map((i, s) => i.map((a, c) => a - n[r][s][c])), r = pe(o), t[o][r] = n[o].map((i, s) => i.map((a, c) => a - n[r][s][c])), r = fe(o), t[o][r] = e[o].map((i, s) => i.map((a, c) => a - e[r][s][c]));
+    }
+    return t;
+  }
+  var k = Z(Se, He);
+  var ke = Z(Te, Fe);
+  var Ce = Z(Ae, Re);
+  var Le = [k, ke, k, k, k, k, Ce];
+  function de(n) {
+    return n + 1 & 3;
+  }
+  function fe(n) {
+    return n + 2 & 3;
+  }
+  function pe(n) {
+    return n + 3 & 3;
+  }
+  function Ge(n, e, t) {
+    return Le[n - 1][e][t];
+  }
+  function ve(n, e) {
+    return n = l.setX(n, 4), n = l.setY(n, e), n;
+  }
+  function Xe(n, e) {
+    l.getX(e) > 0 ? m[0] = e - 32 : m[0] = -1, l.getX(e) < 9 ? m[1] = e + 32 : m[1] = -1, l.getY(e) > 0 ? m[2] = e - 1 : m[2] = -1;
+    let t = l.getRotation(e), o = e & -1537, r = de(t), i = pe(t), s = fe(t);
+    m[3] = o | r << 9, m[4] = o | i << 9, m[5] = o | s << 9, m[3] = J(n, m[3], t, r), m[4] = J(n, m[4], t, i), m[5] = J(n, m[5], t, s);
+  }
+  function le(n, e) {
+    let t = l.positions(e);
+    if (t == -1) return true;
+    for (; t > 0; ) {
+      let o = d.getMino(t);
+      if (n.at(o.x, o.y) === 8) return true;
+      t = d.nextMino(t);
+    }
+    return false;
+  }
+  function J(n, e, t, o) {
+    for (let [r, i] of Ge(l.getPiece(e), t, o)) {
+      let s = e + (r << 5) + i;
+      if (!le(n, s)) return s;
+    }
+    return -1;
+  }
+  function ae(n) {
+    let e = n >> 5, o = 1 << (n & 31), r = (U[e] & o) !== 0;
+    return U[e] |= o, r;
+  }
+  function me(n, e) {
+    let t = ve(e, n.getHeight());
+    if (e == t) return true;
+    let o = new R(64);
+    for (U.fill(0), o.enqueue(t), ae(t); !o.isEmpty(); ) {
+      let r = o.dequeue();
+      Xe(n, r);
+      for (let i = 0; i < ue; i++) {
+        let s = m[i];
+        if (s !== -1) {
+          if (s === e) return true;
+          ae(s) || (i >= 3 || !le(n, s)) && o.enqueue(s);
+        }
+      }
+    }
+    return false;
+  }
+  var S = class extends l {
+    static encode(e) {
+      let t = e.absY << 14;
+      return t |= super.encode(e), t;
+    }
+    static update(e, t) {
+      let o = t << 14;
+      return o |= e, o;
+    }
+    static getAbsY(e) {
+      return e >> 14 & 31;
+    }
+    static stripY(e) {
+      return e >> 5;
+    }
+  };
+  var $ = class extends E {
+    isLineClear(e) {
+      return this.field[e] === 586406201480;
+    }
+    emptyColored() {
+      for (let e = 0; e < this.height; e++) {
+        let t = this.field[e], o = t & 1048575, r = Math.floor(t / 1048576);
+        o &= E.HIGH_BITS_MASK, r &= E.HIGH_BITS_MASK, this.field[e] = r * 1048576 + (o >>> 0);
+      }
+    }
+    checkColored() {
+      for (let e = 0; e < this.height; e++) {
+        let t = this.field[e], o = t & 1048575, r = Math.floor(t / 1048576);
+        if (((o | r) & E.NOT_HIGH_BITS_MASK) != 0) return true;
+      }
+      return false;
+    }
+  };
+  function Ye(n, e, t = "X") {
+    let o = 0;
+    for (let r = 0; r < 4; r++) {
+      let i = d.getMino(e);
+      n.unset(i.x, i.y), n.set(i.x, i.y, t), o |= 1 << i.y, e = d.nextMino(e);
+    }
+    return o;
+  }
+  function ze(n) {
+    let e = new Uint8Array(8), t = n.getHeight(), o = 0;
+    for (let r = 0; r < t; r++) for (let i = 0; i < 10; i++) {
+      let s = n.at(i, r);
+      D(s) && (e[s]++, o += Math.floor(e[s] / 4), e[s] %= 4);
+    }
+    return e.every((r) => r == 0) ? o : -1;
+  }
+  function Ke(n, e) {
+    let t = n.map(S.stripY), o = new Set(t);
+    for (let r of e) {
+      if (n.length !== r.length) return false;
+      if (r.map(S.stripY).every((s) => o.has(s))) return true;
+    }
+    return false;
+  }
+  function We(n) {
+    return n >> 3;
+  }
+  function De(n, e, t) {
+    if (e <= 1) return false;
+    let o = true, r = [];
+    for (let a = 0; a < 4; a++) {
+      let c = d.getMino(t);
+      o && (o = c.y != e && n.at(c.x, c.y - 1) == 8), c.y == e && r.push(c), t = d.nextMino(t);
+    }
+    if (o) return false;
+    let i = 0, s = (1 << e) - (1 << Math.max(0, e - 5));
+    for (let a of r) {
+      for (let c = Math.max(0, e - 5); c < e; c++) i |= We(n.at(a.x, c)) << c;
+      if (i == s) return false;
+    }
+    return true;
+  }
+  var Ve = 40;
+  var qe = 74;
+  function Je(n, e, t, o, r) {
+    if (!r && De(n, t, o)) return { x: 0, y: Math.max(0, t - 4) };
+    let i = d.getMino(o);
+    for (o = d.nextMino(o); o > 0; ) {
+      let s = d.getMino(o);
+      s.x > i.x && t == s.y && (i = s), o = d.nextMino(o);
+    }
+    if (r || t == 0 || t == n.getHeight()) return { x: (i.x + 1) % 10, y: t + ~~((i.x + 1) / 10) };
+    if (e >= 1 && n.at(e - 1, t - 1) == 4 && n.at(e, t + 1) == 4) return { x: e - 1, y: t - 1 };
+    if (i.x < 9 && n.at(i.x + 1, i.y - 1) == 3 && n.at(i.x, i.y + 1) == 3) return { x: i.x + 1, y: i.y - 1 };
+    if (e >= 2 && n.at(e - 2, t) == n.at(e, t + 1) && (Ve & 1 << n.at(e - 2, t)) != 0) return { x: e - 2, y: t };
+    if (e >= 1 && (qe & 1 << n.at(e - 1, t)) != 0) {
+      if (n.at(e - 1, t) == 4) {
+        if (n.at(e, t + 1) == 8 && n.at(e, t + 2) == 4) return { x: e - 1, y: t };
+      } else if (n.at(e - 1, t) == n.at(e, t + 1)) return { x: e - 1, y: t };
+    }
+    return { x: (i.x + 1) % 10, y: t + ~~((i.x + 1) / 10) };
+  }
+  function Ue(n, e, t, o, r) {
+    let i = t.getHeight();
+    for (; e < i; e++) {
+      for (; n < 10; n++) {
+        let s = t.at(n, e);
+        if (!D(s) || e == i - 1 && s != 2) continue;
+        let a = -1;
+        if (o !== null) {
+          for (let c = 0; c < r + 1; c++) o[c] == s && (a = c);
+          if (a == -1) continue;
+        }
+        return { x: n, y: e, orderIndex: a };
+      }
+      n = 0;
+    }
+    return null;
+  }
+  function Ze(n, e, t, o) {
+    let r = e.getHeight(), i = l.positions(n);
+    if (i == -1) return -1;
+    let s = l.getPiece(n), a = !t, c = i;
+    for (let u = 0; u < 4; u++) {
+      let p = d.getMino(c);
+      if (p.y >= r || e.at(p.x, p.y) !== s) return -1;
+      a && (a = p.y != 0 && e.at(p.x, p.y - 1) != 8), c = d.nextMino(c);
+    }
+    return a || o && !me(e, n) ? -1 : i;
+  }
+  function $e(n, e) {
+    let t = e;
+    for (; n > 0; ) {
+      let o = 31 - Math.clz32(n), r = F(o, e);
+      t |= 1 << r, n &= ~(1 << o);
+    }
+    return t;
+  }
+  function he(n, e, t, o, r, i) {
+    let s = ze(n);
+    if (s == -1) return [];
+    if (s == 0) return [[]];
+    let a = [], c = [];
+    for (a.push({ x0: 0, y0: 0, field: n, operations: [], rowsCleared: 0, order: o }); a.length > 0; ) {
+      let { x0: u, y0: p, field: O, operations: g, rowsCleared: y, order: x } = a.pop(), P = Ue(u, p, O, x, r);
+      if (P === null) continue;
+      let { x: T, y: C, orderIndex: be } = P, N = O.at(T, C);
+      a.push({ x0: (T + 1) % 10, y0: C + Math.floor((T + 1) / 10), field: O, operations: g, rowsCleared: y, order: x });
+      let Ee = H[N].length;
+      for (let L = 0; L < Ee; L++) {
+        let Oe = te(T, C, N, L), _ = l.encode({ ...Oe, type: h[N], rotation: M[L] }), B = Ze(_, O, t, i);
+        if (B == -1) continue;
+        let A = O.copy(), ye = Ye(A, B), Y = v(A, ye);
+        re(A, Y);
+        let Me = F(l.getY(_), y);
+        if (_ = S.update(_, Me), g.length + 1 == s && !A.checkColored()) {
+          if (g.push(_), Ke(g, c) || c.push(g), c.length == e) return c;
+          continue;
+        }
+        let we = $e(Y, y), [j, Q] = [0, 0];
+        if (Y == 0 && x === null && !i) {
+          let ee = Je(O, T, C, B, t);
+          j = ee.x, Q = ee.y;
+        }
+        let z = x?.slice() ?? null;
+        z !== null && z.splice(be, 1), a.push({ x0: j, y0: Q, field: A, operations: [...g, _], rowsCleared: we, order: z });
+      }
+    }
+    return c;
+  }
+  function ge(n, { solutionLimit: e = 1, order: t = "", hold: o = 0, srs180: r = false, floatingPieces: i = false } = {}) {
+    let s = G(n), a = [], c = null;
+    if (t !== "") {
+      let u = Array.from(t);
+      if (!u.every(ne)) throw new Error(`Given order '${t}' does not consist of only tetris pieces`);
+      c = u.map((p) => h[p]);
+    }
+    if (o < 0) throw new Error(`Given hold expected to be nonnegative but ${o} gotten`);
+    for (let u of s) {
+      let p = new $(u.field, 20);
+      r && e < 1 && (e = he(p, e, i, c, o, false).length);
+      let O = he(p, e, i, c, o, r);
+      p.emptyColored();
+      let g = p.toField();
+      for (let y of O) {
+        let x = y.map((P) => ({ operation: S.decode(P) }));
+        y.length == 0 ? x.push({ field: g }) : x[0].field = g, a.push(import_tetris_fumen3.encoder.encode(x));
+      }
+    }
+    return a;
+  }
+  function xe(n) {
+    let e = G(n), t = new E(e[0].field, 20), o = 0, r = 0;
+    for (let i of e) {
+      let s = i.operation;
+      if (s === void 0) continue;
+      let a = d.positions(s.x, s.y, h[s.type], M[s.rotation]);
+      if (a == -1) throw new Error("One of the pieces goes off the board");
+      for (let c = 0; c < 4; c++) {
+        let u = d.getMino(a);
+        u.y = F(u.y, r), t.set(u.x, u.y, s.type), o |= 1 << u.y, a = d.nextMino(a);
+      }
+      r |= v(t, o), o = 0;
+    }
+    return import_tetris_fumen6.encoder.encode([{ field: t.toField() }]);
+  }
+
+  // src/TetrisQuiz.ts
+  var import_tetris_fumen7 = __toESM(require_tetris_fumen(), 1);
+  var HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
+  for (let i = 0; i < 16; i++) {
+    const count = i.toString(2).replace(/0/g, "").length;
+    const hex = i.toString(16);
+    HEX_TO_SET_BIT_COUNT[hex.charCodeAt(0)] = count;
+    HEX_TO_SET_BIT_COUNT[hex.toUpperCase().charCodeAt(0)] = count;
+  }
+  function countSetBits(hexstr) {
+    let count = 0;
+    for (let i = 0; i < hexstr.length; i++) {
+      count += HEX_TO_SET_BIT_COUNT[hexstr[i].charCodeAt(0)];
+    }
+    return count;
+  }
+  var TetrisQuiz = class extends TetrisGame {
+    constructor(pattern, initialFumen, targetFumen, coverMask = null, fillBag = false, handling = DEFAULT_TUNING) {
+      super(pattern, fillBag, handling);
+      __publicField(this, "initialFumen");
+      __publicField(this, "targetFumen");
+      __publicField(this, "coverMask");
+      __publicField(this, "validTargetFumens");
+      // frequency map of pieces in target fumen
+      __publicField(this, "correctBuild");
+      __publicField(this, "buildLength");
+      this.initialFumen = initialFumen;
+      this.targetFumen = targetFumen;
+      this.coverMask = coverMask;
+      this.validTargetFumens = [];
+      this.correctBuild = new Uint8Array(128).fill(0);
+      this.buildLength = -1;
+      this.board.fromFumen(this.initialFumen);
+    }
+    setInitial(fumen) {
+      this.initialFumen = fumen;
+      this.fullReset();
+    }
+    setTarget(fumen) {
+      this.targetFumen = fumen;
+      this.fullReset();
+    }
+    setCoverMask(mask) {
+      this.coverMask = mask;
+      this.fullReset();
+    }
+    reset(soft) {
+      super.reset(soft);
+      this.board.fromFumen(this.initialFumen);
+      this.getValidTargets();
+    }
+    generateQueue() {
+      if (!this.coverMask) {
+        return super.generateQueue();
+      } else {
+        const index = this.random.randInt(0, countSetBits(this.coverMask));
+        const queues = sfinderPieces(this.parsedQueuePattern);
+        return queues[index];
+      }
+    }
+    // targetFumen can contain multiple accepted final board states, find which ones are covered
+    getValidTargets() {
+      this.validTargetFumens = [];
+      const fumens = fumenSplit(this.targetFumen);
+      if (fumens.length > 0) {
+        const queue = (this.holdPiece != 0 /* _ */ ? PieceEnum[this.holdPiece] : "") + PieceEnum[this.active.type] + this.queue.queue.map((piece) => PieceEnum[piece]).join("");
+        for (const fumen of fumens) {
+          if (ge(fumen, { order: queue, hold: 1, srs180: true }).length > 0) {
+            this.validTargetFumens.push(fumen);
+          }
+        }
+      }
+      if (this.validTargetFumens.length == 0) {
+        throw new Error("Invalid parameters to quiz as no valid target answer for given queue " + this.currentQueue);
+      }
+      const initialBuild = new Uint8Array(128).fill(0);
+      fumenCountPieces(this.initialFumen, initialBuild);
+      fumenCountPieces(this.validTargetFumens[0], this.correctBuild);
+      this.buildLength = 0;
+      for (const piece of BAG) {
+        const index = piece.charCodeAt(0);
+        this.correctBuild[index] -= initialBuild[index];
+        this.buildLength += this.correctBuild[index];
+      }
+    }
+    lock(piece = null) {
+      const lineclears = this.harddrop(piece, true);
+      if (lineclears.length > 0) {
+        this.validTargetFumens = this.validTargetFumens.map((fumen) => fumenClearLines(fumen, lineclears));
+      }
+      let resetted = false;
+      if (this.pieceCount == this.buildLength) {
+        let soft;
+        const pages = [];
+        const currentBuild = new Uint8Array(128).fill(0);
+        for (const operation of this.operations.slice(
+          this.totalPieceCount - this.pieceCount,
+          this.totalPieceCount
+        )) {
+          const piece2 = PieceEnum[operation.type];
+          pages.push({
+            operation: {
+              ...operation,
+              type: piece2,
+              rotation: Rotation[operation.rotation]
+            }
+          });
+          currentBuild[piece2.charCodeAt(0)]++;
+        }
+        let correctPieces = true;
+        for (const piece2 of BAG) {
+          const index = piece2.charCodeAt(0);
+          if (currentBuild[index] != this.correctBuild[index]) {
+            correctPieces = false;
+            break;
+          }
+        }
+        if (correctPieces) {
+          pages[0].field = decodeWrapper(this.initialFumen)[0].field;
+          const fumen = xe(import_tetris_fumen7.encoder.encode(pages));
+          let congruent = false;
+          for (const validFumen of this.validTargetFumens) {
+            congruent || (congruent = fumen == validFumen);
+          }
+          if (congruent) {
+            soft = false;
+            if (!this.simulating) this.pendingEvents.push("correct");
+          } else {
+            soft = true;
+            if (!this.simulating) this.pendingEvents.push("wrong");
+          }
+          if (soft) {
+            this.reset(true);
+            resetted = true;
+          }
+        } else {
+          this.reset(true);
+          resetted = true;
+        }
+      }
+      this.getNextPiece(resetted);
+      if (this.checkCollide(this.active)) {
+        this.reset(this.softReset);
+      }
+    }
+  };
+
   // src/Keybind.ts
-  var DEFAULT2 = {
+  var DEFAULT = {
     left: "ArrowLeft",
     right: "ArrowRight",
-    hold: "ShiftLeft",
-    cw: "KeyS",
-    ccw: "KeyA",
-    180: "KeyD",
+    hold: "KeyC",
+    cw: "KeyX",
+    ccw: "KeyZ",
+    180: "ShiftLeft",
     sd: "ArrowDown",
     hd: "Space",
     d1: "KeyH",
@@ -3467,7 +4222,7 @@ ${end}`);
     set(action, key) {
       if (action == "undo") return;
       const dupAction = Object.keys(this.binding).find(
-        (k) => this.binding[k] === key
+        (k2) => this.binding[k2] === key
       );
       if (dupAction) this.binding[dupAction] = "-";
       this.binding[action] = key;
@@ -3486,12 +4241,12 @@ ${end}`);
       this.rebuildLookup();
       this.subscribers.forEach((fn) => fn(this.binding));
     }
-    reset(defaultBinds = DEFAULT2) {
+    reset(defaultBinds = DEFAULT) {
       this.binding = { ...defaultBinds };
       this.notify();
     }
   };
-  var keybinds = new Keybind(DEFAULT2);
+  var keybinds = new Keybind(DEFAULT);
 
   // src/index.ts
   var gameCtn = document.querySelector("#game-container");
@@ -3503,10 +4258,12 @@ ${end}`);
   }
   var game;
   var actions = /* @__PURE__ */ new Set();
+  var showAnswer = false;
   var CELL_SIZE = 24;
   var controls = window.config.controls;
   var tuning = window.config.tuning;
   keybinds.reset(controls);
+  var parameters = window.parameters;
   boardCanvas.width = PCSIZE * CELL_SIZE;
   boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
   queueCanvas.width = 4 * CELL_SIZE;
@@ -3521,7 +4278,8 @@ ${end}`);
   queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
   gameCtn.addEventListener("keydown", handleKeyDown);
   gameCtn.addEventListener("keyup", handleKeyUp);
-  game = new TetrisGame();
+  game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.targetFumen, null, parameters.fillBag == "T");
+  game.reset(false);
   game.loadHandling(tuning);
   var frame;
   var loop = (timestamp) => {
@@ -3531,6 +4289,7 @@ ${end}`);
     if (actions.has("right")) tmpActions.add("right");
     if (actions.has("sd")) tmpActions.add("sd");
     actions = tmpActions;
+    handleEvents();
     drawGame(boardCtx, game);
     drawQueue(queueCtx, game.queue);
     drawHold(holdCtx, game.holdPiece);
@@ -3539,8 +4298,6 @@ ${end}`);
   frame = requestAnimationFrame(loop);
   function handleKeyDown(event) {
     if (event.code == "KeyZ" && event.ctrlKey) {
-      event.preventDefault();
-      event.stopPropagation();
       actions.add("undo");
     } else actions.add(keybinds.lookup[event.code]);
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
@@ -3550,9 +4307,27 @@ ${end}`);
   function handleKeyUp(event) {
     actions.delete(keybinds.lookup[event.code]);
   }
+  function handleEvents() {
+    for (let event of game.pendingEvents) {
+      switch (event) {
+        case "correct":
+          showAnswer = false;
+          pycmd("tetris:answer");
+          break;
+        case "wrong":
+          break;
+        case "missing setup":
+          break;
+      }
+    }
+    game.pendingEvents = [];
+  }
   function drawGame(context, game2) {
     drawBoard(context, game2.board);
     drawPiece(context, game2.active);
+    if (showAnswer && game2.validTargetFumens.length > 0) {
+      drawFumen(context, game2.validTargetFumens[0], "4D", game2.board);
+    }
     drawPiece(context, game2.getGhost(), "4D");
   }
   function drawBoard(context, board) {
@@ -3586,7 +4361,7 @@ ${end}`);
     }
   }
   function drawQueue(context, queue) {
-    context.fillStyle = get_colour(0 /* X */);
+    context.fillStyle = get_colour(0 /* _ */);
     context.fillRect(0, 0, 4, 14);
     let preview = queue.preview();
     for (let i = 0; i < Math.min(preview.length, 5); i++) {
@@ -3605,9 +4380,9 @@ ${end}`);
     }
   }
   function drawHold(context, hold) {
-    context.fillStyle = get_colour(0 /* X */);
+    context.fillStyle = get_colour(0 /* _ */);
     context.fillRect(0, 0, 4, 2);
-    if (hold != 0 /* X */) {
+    if (hold != 0 /* _ */) {
       let shiftX = 0;
       let shiftY = 0;
       if (hold != 2 /* I */ && hold != 7 /* O */) {
@@ -3621,13 +4396,28 @@ ${end}`);
     }
   }
   function drawPiece(context, piece, opacity = "") {
-    if (piece.type === 0 /* X */) return;
+    if (piece.type === 0 /* _ */) return;
     if (opacity === void 0) {
       opacity = "";
     }
     for (let { x, y } of piece.getMinos()) {
       context.fillStyle = get_colour(piece.type) + opacity;
       context.fillRect(x, y, 1, 1);
+    }
+  }
+  function drawFumen(context, fumen, opacity = "", board = null) {
+    const page = decodeWrapper(fumen)[0];
+    const field = page.field.str({ reduced: true, garbage: false }).split("\n").toReversed();
+    for (let row = 0; row < field.length; row++) {
+      for (let col = 0; col < PCSIZE; col++) {
+        if (board !== null && board.isFilled(row, col)) {
+          continue;
+        }
+        const cell = field[row][col];
+        const index = PieceEnum[cell];
+        context.fillStyle = get_colour(index) + opacity;
+        context.fillRect(col, row, 1, 1);
+      }
     }
   }
   function drawOOF(context) {

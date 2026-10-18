@@ -2,9 +2,11 @@ import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { get_colour, PieceEnum, Rotation } from './pieceData';
 import { TetrisQueue } from './TetrisQueue';
 import { TetrisBoard } from './TetrisBoard';
-import { TetrisGame } from './TetrisGame';
+import { TetrisQuiz } from './TetrisQuiz';
 import { type Action, keybinds } from './Keybind';
 import { PCSIZE, BOARDHEIGHT } from './constants';
+import { Fumen, Mino } from './types';
+import { decodeWrapper } from './fumenUtils';
 
 const gameCtn = document.querySelector<HTMLDivElement>("#game-container");
 const boardCanvas = document.querySelector<HTMLCanvasElement>("#board");
@@ -16,7 +18,7 @@ if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
 }
 
 let patternsText = '';
-let game: TetrisGame;
+let game: TetrisQuiz;
 let actions: Set<Action> = new Set<Action>();
 let showSettings: boolean = false;
 
@@ -31,6 +33,8 @@ const CELL_SIZE = 24;
 const controls = window.config.controls;
 const tuning = window.config.tuning;
 keybinds.reset(controls);
+
+const parameters = window.parameters;
 
 boardCanvas.width = PCSIZE * CELL_SIZE;
 boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
@@ -52,7 +56,8 @@ queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
 gameCtn.addEventListener("keydown", handleKeyDown)
 gameCtn.addEventListener("keyup", handleKeyUp)
 
-game = new TetrisGame();
+game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.targetFumen, null, parameters.fillBag == 'T');
+game.reset(false);
 game.loadHandling(tuning);
 
 let frame: DOMHighResTimeStamp;
@@ -64,7 +69,7 @@ const loop = (timestamp: number) => {
   if (actions.has('sd')) tmpActions.add('sd');
   actions = tmpActions;
 
-  // handleEvents();
+  handleEvents();
 
   drawGame(boardCtx, game);
   drawQueue(queueCtx, game.queue);
@@ -74,12 +79,8 @@ const loop = (timestamp: number) => {
 
 frame = requestAnimationFrame(loop);
 
-// return () => cancelAnimationFrame(frame); // Cleanup on destroy
-
 function handleKeyDown(event: KeyboardEvent) {
   if (event.code == 'KeyZ' && event.ctrlKey) {
-    event.preventDefault();
-    event.stopPropagation();
     actions.add('undo');
   }
   else actions.add(keybinds.lookup[event.code]);
@@ -93,32 +94,29 @@ function handleKeyUp(event: KeyboardEvent) {
   actions.delete(keybinds.lookup[event.code]);
 }
 
-// function handleEvents() {
-//   for (let event of game.pendingEvents) {
-//     switch (event) {
-//       case 'correct':
-//         showAnswer = false;
-//         break;
-//       case 'wrong':
-//         break;
-//       case 'missing setup':
-//         break;
-//     }
-//   }
-//   game.pendingEvents = [];
-//
-//   // set mode back to game
-//   game.mode = currMode;
-//   game.allowSolving = quizAllowSolve;
-// }
+function handleEvents() {
+  for (let event of game.pendingEvents) {
+    switch (event) {
+      case 'correct':
+        showAnswer = false;
+        pycmd("tetris:answer")
+        break;
+      case 'wrong':
+        break;
+      case 'missing setup':
+        break;
+    }
+  }
+  game.pendingEvents = [];
+}
 
-function drawGame(context: CanvasRenderingContext2D, game: TetrisGame) {
+function drawGame(context: CanvasRenderingContext2D, game: TetrisQuiz) {
   drawBoard(context, game.board);
   drawPiece(context, game.active);
 
-  // if (showAnswer && game.runningCorrectSetup !== null) {
-  //   drawFumen(context, game.runningCorrectSetup, '4D', game.board);
-  // }
+  if (showAnswer && game.validTargetFumens.length > 0) {
+    drawFumen(context, game.validTargetFumens[0], '4D', game.board);
+  }
 
   // Ghost
   drawPiece(context, game.getGhost(), '4D');
@@ -161,7 +159,7 @@ function drawBoard(context: CanvasRenderingContext2D, board: TetrisBoard) {
 }
 
 function drawQueue(context: CanvasRenderingContext2D, queue: TetrisQueue) {
-  context.fillStyle = get_colour(PieceEnum.X);
+  context.fillStyle = get_colour(PieceEnum._);
   context.fillRect(0, 0, 4, 14);
   let preview = queue.preview();
   for (let i = 0; i < Math.min(preview.length, 5); i++) {
@@ -181,10 +179,10 @@ function drawQueue(context: CanvasRenderingContext2D, queue: TetrisQueue) {
 }
 
 function drawHold(context: CanvasRenderingContext2D, hold: PieceEnum) {
-  context.fillStyle = get_colour(PieceEnum.X);
+  context.fillStyle = get_colour(PieceEnum._);
   context.fillRect(0, 0, 4, 2);
 
-  if (hold != PieceEnum.X) {
+  if (hold != PieceEnum._) {
     let shiftX = 0;
     let shiftY = 0;
     if (hold != PieceEnum.I && hold != PieceEnum.O) {
@@ -204,7 +202,7 @@ function drawPiece(
   piece: TetrisBoardPiece,
   opacity: string = ''
 ) {
-  if (piece.type === PieceEnum.X) return;
+  if (piece.type === PieceEnum._) return;
   if (opacity === undefined) {
     opacity = '';
   }
@@ -214,27 +212,27 @@ function drawPiece(
   }
 }
 
-// function drawFumen(
-//   context: CanvasRenderingContext2D,
-//   fumen: Fumen,
-//   opacity: string = '',
-//   board: TetrisBoard | null = null
-// ) {
-//   const page = decodeWrapper(fumen)[0];
-//   const field = page.field.str({ reduced: true, garbage: false }).split('\n').toReversed();
-//   for (let row = 0; row < field.length; row++) {
-//     for (let col = 0; col < PCSIZE; col++) {
-//       if (board !== null && board.isFilled(row, col)) {
-//         continue;
-//       }
-//       const cell = field[row][col];
-//       const index = cell == '_' ? PieceEnum.X : PieceEnum[cell as Piece];
-//
-//       context.fillStyle = get_colour(index) + opacity;
-//       context.fillRect(col, row, 1, 1);
-//     }
-//   }
-// }
+function drawFumen(
+  context: CanvasRenderingContext2D,
+  fumen: Fumen,
+  opacity: string = '',
+  board: TetrisBoard | null = null
+) {
+  const page = decodeWrapper(fumen)[0];
+  const field = page.field.str({ reduced: true, garbage: false }).split('\n').toReversed();
+  for (let row = 0; row < field.length; row++) {
+    for (let col = 0; col < PCSIZE; col++) {
+      if (board !== null && board.isFilled(row, col)) {
+        continue;
+      }
+      const cell = field[row][col];
+      const index = PieceEnum[cell as Mino];
+
+      context.fillStyle = get_colour(index) + opacity;
+      context.fillRect(col, row, 1, 1);
+    }
+  }
+}
 
 function drawOOF(context: CanvasRenderingContext2D) {
   let transform = context.getTransform();

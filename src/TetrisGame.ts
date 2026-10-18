@@ -3,10 +3,10 @@ import { TetrisQueue } from './TetrisQueue';
 import { TetrisBoard } from './TetrisBoard';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { PRNG, type Seed } from './random';
-import type { Action } from './Keybind';
 import { type ParsedPattern, parsePattern, randomSfinderPieces } from './pieces';
 import { PCSIZE, BOARDHEIGHT } from './constants';
 import { get_kicks, spin_cw, spin_ccw, spin_180, PieceEnum, Rotation } from './pieceData';
+import type { Action } from './Keybind';
 
 const PREVIEWSIZE = 5;
 const INITIALY = 19;
@@ -18,7 +18,7 @@ export interface Tuning {
   das: number;
 }
 
-export const DEFAULT = {
+export const DEFAULT_TUNING = {
   arr: 0,
   sdArr: 0,
   das: 80
@@ -37,7 +37,6 @@ export class TetrisGame {
   softReset: boolean = false;
 
   handling: Tuning;
-  storageKey: string;
 
   pieceCount: number;
   totalPieceCount: number;
@@ -56,20 +55,21 @@ export class TetrisGame {
   protected currentQueue: Queue | null;
   protected operations: TetrisBoardPiece[];
 
+  protected fillBags: boolean;
+
   constructor(
     pattern: string = '',
-    handling: Tuning = DEFAULT,
-    storageKey: string = 'handling'
+    fillBags: boolean = false,
+    handling: Tuning = DEFAULT_TUNING
   ) {
     this.handling = handling;
-    this.storageKey = storageKey;
     this.pieceCount = 0;
     this.totalPieceCount = 0;
 
     this.pendingEvents = [];
 
     this.random = new PRNG();
-    this.seed = [-1, -1, -1, -1];
+    this.seed = this.random.reseed();
 
     this.simulating = false;
 
@@ -80,24 +80,26 @@ export class TetrisGame {
     this.parsedQueuePattern = null;
     this.currentQueue = null;
 
-    this.setPattern(pattern);
+    this.fillBags = fillBags;
+    this.parsedQueuePattern = parsePattern(pattern);
+
+    this.queue.setFillBags(this.fillBags);
+  }
+
+  protected generateQueue(): string | null {
+    return randomSfinderPieces(this.parsedQueuePattern as ParsedPattern, this.random.randInt);
   }
 
   setPattern(pattern: string): void {
     if (pattern.length > 0) {
       this.parsedQueuePattern = parsePattern(pattern);
-      const queue = randomSfinderPieces(this.parsedQueuePattern, this.random.randInt);
-      if (queue === null) {
-        throw new Error('Pattern generates no queues');
-      }
-
-      this.queue.setFillBags(false);
+      this.queue.setFillBags(this.fillBags);
     }
     this.fullReset();
   }
 
   protected setActive(piece: PieceEnum): void {
-    if (piece == PieceEnum.X) throw new Error('Unable to set active piece as gotten invalid piece');
+    if ([PieceEnum._, PieceEnum.X].includes(piece)) throw new Error('Unable to set active piece as gotten invalid piece');
     this.active = new TetrisBoardPiece(INITIALX, INITIALY, piece, Rotation.spawn);
   }
 
@@ -138,10 +140,12 @@ export class TetrisGame {
   }
 
   regen(): void {
-    this.currentQueue = randomSfinderPieces(
-      this.parsedQueuePattern as ParsedPattern,
-      this.random.randInt
-    ) as Queue;
+    const queue = this.generateQueue();
+    if (queue === null) {
+      throw new Error('Pattern generates no queues');
+    }
+    this.currentQueue = queue as Queue;
+
     this.queue.set(this.currentQueue);
   }
 
@@ -163,7 +167,7 @@ export class TetrisGame {
   }
 
   hold(): void {
-    if (this.holdPiece === PieceEnum.X) {
+    if (this.holdPiece === PieceEnum._) {
       if (this.queue.length == 0) {
         this.setActive(this.active.type);
         return;
@@ -217,7 +221,7 @@ export class TetrisGame {
     this.movePiece(0, -1);
   }
 
-  lock(piece: TetrisBoardPiece | null = null): void {
+  protected harddrop(piece: TetrisBoardPiece | null = null, clear: boolean = true): number[] {
     // move piece as far down as possible (hd)
     if (piece !== null) {
       this.active.x = piece.x;
@@ -228,21 +232,28 @@ export class TetrisGame {
       this.held = false;
       this.operations.push(this.active.copy());
     }
-    this.board.place(this.active, true);
     this.pieceCount++;
     this.totalPieceCount++;
+    return this.board.place(this.active, clear);
+  }
 
+  protected getNextPiece(resetted: boolean): void {
     if (this.queue.length == 0) {
-      if (this.holdPiece != PieceEnum.X) {
+      if (this.holdPiece != PieceEnum._) {
         this.setActive(this.holdPiece);
-        this.holdPiece = PieceEnum.X;
+        this.holdPiece = PieceEnum._;
       } else {
         // no more pieces
         this.reset(this.softReset);
       }
-    } else {
+    } if (!resetted) {
       this.setActive(this.queue.poll());
     }
+  }
+
+  lock(piece: TetrisBoardPiece | null = null): void {
+    this.harddrop(piece);
+    this.getNextPiece(false);
 
     // topped out
     if (this.checkCollide(this.active)) {
@@ -262,6 +273,11 @@ export class TetrisGame {
     this.reset();
     this.simulating = true;
     this.totalPieceCount = 0;
+
+    if (this.holdPiece == PieceEnum._) {
+      this.hold();
+    }
+
     for (const piece of this.operations) {
       if (this.active.type !== piece.type) {
         if (this.holdPiece !== piece.type) {

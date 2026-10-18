@@ -80,7 +80,9 @@ export class TetrisQueue {
   set(queue: Queue): void {
     this.length = queue.length;
     this.pos = 0;
-    this.queue = ([...queue] as Piece[]).map(get_piece_number);
+    for (let i = 0; i < Math.min(queue.length, this.queue.length); i++) {
+      this.queue[i] = get_piece_number(queue[i] as Piece);
+    }
   }
 
   setFillBags(value: boolean): void {

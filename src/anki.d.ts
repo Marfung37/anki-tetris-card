@@ -9,8 +9,9 @@ interface GameConfig {
 
 interface Parameters {
   pattern: string;
-  intialFumen: Fumen;
+  initialFumen: Fumen;
   targetFumen: Fumen;
+  fillBag: 'T' | 'F';
 }
 
 declare global {

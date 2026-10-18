@@ -443,18 +443,20 @@ const colour_table = [
   '#5e81ac',
   '#a3be8c',
   '#bf616a',
-  '#ebcb8b'
+  '#ebcb8b',
+  '#868686'
 ];
 
 export enum PieceEnum {
-  X,
+  _,
   T,
   I,
   L,
   J,
   S,
   Z,
-  O
+  O,
+  X
 }
 
 export enum Rotation {
