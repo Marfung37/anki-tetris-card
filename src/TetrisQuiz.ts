@@ -1,6 +1,4 @@
 import { TetrisGame, DEFAULT_TUNING } from './TetrisGame';
-import type { Fumen, Queue } from './types';
-import type { Tuning } from './TetrisGame';
 import { type ParsedPattern, sfinderPieces } from './pieces';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
 import {
@@ -9,12 +7,25 @@ import {
   fumenCountPieces,
   fumenClearLines
 } from './fumenUtils';
-import type { Operation } from 'glue-fumen';
 import { glueFumen, unglueFumen } from 'glue-fumen';
 import { PieceEnum, Rotation } from './pieceData';
 import { encoder, Field } from 'tetris-fumen';
 import { BAG } from './constants';
+import type { Fumen, Queue } from './types';
+import type { Tuning } from './TetrisGame';
+import type { Operation } from 'glue-fumen';
+import type { Seed } from './random';
 
+
+interface SaveState {
+  parsedQueuePattern: ParsedPattern | null;
+  initialFumen: Fumen;
+  targetFumen: Fumen;
+  coverMask: string | null;
+  fillBags: boolean;
+  operations: TetrisBoardPiece[];
+  seed: Seed;
+}
 
 // map for hexdigits to number of set bits
 const HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
@@ -40,6 +51,7 @@ export class TetrisQuiz extends TetrisGame {
   private coverMask: string | null;
 
   validTargetFumens: Fumen[];
+  answered: boolean;
 
   // frequency map of pieces in target fumen
   private correctBuild: Uint8Array;
@@ -50,14 +62,15 @@ export class TetrisQuiz extends TetrisGame {
     initialFumen: Fumen,
     targetFumen: Fumen,
     coverMask: string | null = null,
-    fillBag: boolean = false,
+    fillBags: boolean = false,
     handling: Tuning = DEFAULT_TUNING
   ) {
-    super(pattern, fillBag, handling);
+    super(pattern, fillBags, handling);
     this.initialFumen = initialFumen;
     this.targetFumen = targetFumen;
     this.coverMask = coverMask;
     this.validTargetFumens = [];
+    this.answered = false;
 
     this.correctBuild = new Uint8Array(128).fill(0);
     this.buildLength = -1;
@@ -81,8 +94,10 @@ export class TetrisQuiz extends TetrisGame {
   }
 
 
-  reset(soft: boolean): void {
+  reset(soft: boolean = false): void {
     super.reset(soft);
+    this.pendingEvents.push('reset')
+    this.answered = false;
     this.board.fromFumen(this.initialFumen);
     this.getValidTargets();
   }
@@ -144,11 +159,7 @@ export class TetrisQuiz extends TetrisGame {
       this.validTargetFumens = this.validTargetFumens.map((fumen: Fumen): Fumen => fumenClearLines(fumen, lineclears))
     }
 
-    let resetted = false;
-
     if (this.pieceCount == this.buildLength) {
-      let soft: boolean;
-
       const pages = [];
       const currentBuild = new Uint8Array(128).fill(0);
 
@@ -185,28 +196,62 @@ export class TetrisQuiz extends TetrisGame {
           congruent ||= fumen == validFumen;
         }
 
-        if (congruent) {
-          soft = false;
-          if (!this.simulating) this.pendingEvents.push('correct');
-        } else {
-          soft = true;
-          if (!this.simulating) this.pendingEvents.push('wrong');
-        }
-        if (soft) {
-          this.reset(true);
-          resetted = true;
-        }
-      } else {
-        this.reset(true);
-        resetted = true;
+        this.answered = congruent;
+        const event = congruent ? 'correct' : 'wrong';
+        if (!this.simulating) this.pendingEvents.push(event);
       }
     }
 
-    this.getNextPiece(resetted);
+    this.getNextPiece(false);
 
     // topped out
     if (this.checkCollide(this.active)) {
       this.reset(this.softReset);
     }
+  }
+
+  save(): SaveState {
+    return {
+      parsedQueuePattern: this.parsedQueuePattern,
+      initialFumen: this.initialFumen,
+      targetFumen: this.targetFumen,
+      coverMask: this.coverMask,
+      fillBags: this.fillBags,
+      operations: this.operations,
+      seed: this.seed,
+    }
+  }
+
+  restore(state: SaveState) {
+    this.parsedQueuePattern = state.parsedQueuePattern;
+    this.initialFumen = state.initialFumen;
+    this.targetFumen = state.targetFumen;
+    this.coverMask = state.coverMask;
+    this.fillBags = state.fillBags;
+    this.operations = state.operations;
+    this.seed = state.seed;
+
+    this.random.seed(this.seed);
+
+    this.reset();
+    this.simulating = true;
+    this.totalPieceCount = 0;
+
+    if (this.holdPiece == PieceEnum._) {
+      this.hold();
+    }
+
+    for (const piece of this.operations) {
+      if (this.active.type !== piece.type) {
+        if (this.holdPiece !== piece.type) {
+          console.error(
+            `Neither piece in operations matches pieces in queue (active ${PieceEnum[this.active.type]}, hold ${PieceEnum[this.holdPiece]}, expected ${PieceEnum[piece.type]})`
+          );
+        }
+        this.hold();
+      }
+      this.lock(piece);
+    }
+    this.simulating = false;
   }
 }

@@ -18,6 +18,7 @@ declare global {
   interface Window {
     config: GameConfig;
     parameters: Parameters;
+    ankiCardSide: "front" | "back";
   }
 
   function pycmd(command: string): void;

@@ -4060,12 +4060,13 @@ ${end}`);
     return count;
   }
   var TetrisQuiz = class extends TetrisGame {
-    constructor(pattern, initialFumen, targetFumen, coverMask = null, fillBag = false, handling = DEFAULT_TUNING) {
-      super(pattern, fillBag, handling);
+    constructor(pattern, initialFumen, targetFumen, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
+      super(pattern, fillBags, handling);
       __publicField(this, "initialFumen");
       __publicField(this, "targetFumen");
       __publicField(this, "coverMask");
       __publicField(this, "validTargetFumens");
+      __publicField(this, "answered");
       // frequency map of pieces in target fumen
       __publicField(this, "correctBuild");
       __publicField(this, "buildLength");
@@ -4073,6 +4074,7 @@ ${end}`);
       this.targetFumen = targetFumen;
       this.coverMask = coverMask;
       this.validTargetFumens = [];
+      this.answered = false;
       this.correctBuild = new Uint8Array(128).fill(0);
       this.buildLength = -1;
       this.board.fromFumen(this.initialFumen);
@@ -4089,8 +4091,10 @@ ${end}`);
       this.coverMask = mask;
       this.fullReset();
     }
-    reset(soft) {
+    reset(soft = false) {
       super.reset(soft);
+      this.pendingEvents.push("reset");
+      this.answered = false;
       this.board.fromFumen(this.initialFumen);
       this.getValidTargets();
     }
@@ -4133,9 +4137,7 @@ ${end}`);
       if (lineclears.length > 0) {
         this.validTargetFumens = this.validTargetFumens.map((fumen) => fumenClearLines(fumen, lineclears));
       }
-      let resetted = false;
       if (this.pieceCount == this.buildLength) {
-        let soft;
         const pages = [];
         const currentBuild = new Uint8Array(128).fill(0);
         for (const operation of this.operations.slice(
@@ -4167,26 +4169,54 @@ ${end}`);
           for (const validFumen of this.validTargetFumens) {
             congruent || (congruent = fumen == validFumen);
           }
-          if (congruent) {
-            soft = false;
-            if (!this.simulating) this.pendingEvents.push("correct");
-          } else {
-            soft = true;
-            if (!this.simulating) this.pendingEvents.push("wrong");
-          }
-          if (soft) {
-            this.reset(true);
-            resetted = true;
-          }
-        } else {
-          this.reset(true);
-          resetted = true;
+          this.answered = congruent;
+          const event = congruent ? "correct" : "wrong";
+          if (!this.simulating) this.pendingEvents.push(event);
         }
       }
-      this.getNextPiece(resetted);
+      this.getNextPiece(false);
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
+    }
+    save() {
+      return {
+        parsedQueuePattern: this.parsedQueuePattern,
+        initialFumen: this.initialFumen,
+        targetFumen: this.targetFumen,
+        coverMask: this.coverMask,
+        fillBags: this.fillBags,
+        operations: this.operations,
+        seed: this.seed
+      };
+    }
+    restore(state) {
+      this.parsedQueuePattern = state.parsedQueuePattern;
+      this.initialFumen = state.initialFumen;
+      this.targetFumen = state.targetFumen;
+      this.coverMask = state.coverMask;
+      this.fillBags = state.fillBags;
+      this.operations = state.operations;
+      this.seed = state.seed;
+      this.random.seed(this.seed);
+      this.reset();
+      this.simulating = true;
+      this.totalPieceCount = 0;
+      if (this.holdPiece == 0 /* _ */) {
+        this.hold();
+      }
+      for (const piece of this.operations) {
+        if (this.active.type !== piece.type) {
+          if (this.holdPiece !== piece.type) {
+            console.error(
+              `Neither piece in operations matches pieces in queue (active ${PieceEnum[this.active.type]}, hold ${PieceEnum[this.holdPiece]}, expected ${PieceEnum[piece.type]})`
+            );
+          }
+          this.hold();
+        }
+        this.lock(piece);
+      }
+      this.simulating = false;
     }
   };
 
@@ -4264,6 +4294,7 @@ ${end}`);
   var tuning = window.config.tuning;
   keybinds.reset(controls);
   var parameters = window.parameters;
+  var cardSide = window.ankiCardSide;
   boardCanvas.width = PCSIZE * CELL_SIZE;
   boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
   queueCanvas.width = 4 * CELL_SIZE;
@@ -4281,6 +4312,15 @@ ${end}`);
   game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.targetFumen, null, parameters.fillBag == "T");
   game.reset(false);
   game.loadHandling(tuning);
+  var saved = sessionStorage.getItem("tetris-state");
+  if (saved) {
+    showAnswer = true;
+    game.restore(JSON.parse(saved));
+    sessionStorage.removeItem("tetris-state");
+  }
+  if (cardSide == "back") {
+    showAnswer = !game.answered;
+  }
   var frame;
   var loop = (timestamp) => {
     game.tick(timestamp, actions);
@@ -4295,7 +4335,13 @@ ${end}`);
     drawHold(holdCtx, game.holdPiece);
     frame = requestAnimationFrame(loop);
   };
+  requestAnimationFrame(() => {
+    focusGame();
+  });
   frame = requestAnimationFrame(loop);
+  function focusGame() {
+    gameCtn?.focus();
+  }
   function handleKeyDown(event) {
     if (event.code == "KeyZ" && event.ctrlKey) {
       actions.add("undo");
@@ -4310,9 +4356,16 @@ ${end}`);
   function handleEvents() {
     for (let event of game.pendingEvents) {
       switch (event) {
+        case "reset":
+          showAnswer = cardSide == "back";
+          break;
         case "correct":
           showAnswer = false;
-          pycmd("tetris:answer");
+          if (cardSide == "front") {
+            const state = game.save();
+            sessionStorage.setItem("tetris-state", JSON.stringify(state));
+            pycmd("tetris:answer");
+          }
           break;
         case "wrong":
           break;
@@ -4430,5 +4483,4 @@ ${end}`);
     context.fillText("OUT OF FOCUS", context.canvas.width / 2, context.canvas.height / 2);
     context.setTransform(transform);
   }
-  pycmd("");
 })();

@@ -17,15 +17,8 @@ if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
   throw new Error("Required HTML elements are missing");
 }
 
-let patternsText = '';
 let game: TetrisQuiz;
 let actions: Set<Action> = new Set<Action>();
-let showSettings: boolean = false;
-
-let errorMessage = '';
-
-let quizAllowSolve = false;
-
 let showAnswer = false;
 
 const CELL_SIZE = 24;
@@ -35,6 +28,7 @@ const tuning = window.config.tuning;
 keybinds.reset(controls);
 
 const parameters = window.parameters;
+const cardSide = window.ankiCardSide;
 
 boardCanvas.width = PCSIZE * CELL_SIZE;
 boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
@@ -60,6 +54,19 @@ game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.ta
 game.reset(false);
 game.loadHandling(tuning);
 
+const saved = sessionStorage.getItem("tetris-state");
+
+if (saved) {
+  showAnswer = true;
+  game.restore(JSON.parse(saved));
+  sessionStorage.removeItem("tetris-state");
+}
+if (cardSide == "back") {
+  showAnswer = !game.answered;
+}
+
+
+
 let frame: DOMHighResTimeStamp;
 const loop = (timestamp: number) => {
   game.tick(timestamp, actions);
@@ -77,7 +84,16 @@ const loop = (timestamp: number) => {
   frame = requestAnimationFrame(loop);
 };
 
+// game starts as focus
+requestAnimationFrame(() => {
+  focusGame();
+});
+
 frame = requestAnimationFrame(loop);
+
+function focusGame(): void {
+  gameCtn?.focus();
+}
 
 function handleKeyDown(event: KeyboardEvent) {
   if (event.code == 'KeyZ' && event.ctrlKey) {
@@ -97,9 +113,17 @@ function handleKeyUp(event: KeyboardEvent) {
 function handleEvents() {
   for (let event of game.pendingEvents) {
     switch (event) {
+      case 'reset':
+        showAnswer = cardSide == "back";
+        break;
       case 'correct':
         showAnswer = false;
-        pycmd("tetris:answer")
+        if (cardSide == "front") {
+          const state = game.save();
+
+          sessionStorage.setItem("tetris-state", JSON.stringify(state));
+          pycmd("tetris:answer")
+        }
         break;
       case 'wrong':
         break;
@@ -244,5 +268,3 @@ function drawOOF(context: CanvasRenderingContext2D) {
   context.fillText('OUT OF FOCUS', context.canvas.width / 2, context.canvas.height / 2);
   context.setTransform(transform);
 }
-
-pycmd("")

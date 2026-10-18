@@ -66,6 +66,7 @@ def setup_tetris_card():
 
     template = models.new_template("Tetris")
     template["qfmt"] = html
+    template["afmt"] = ""
 
     models.add_template(note_type, template)
 
@@ -75,17 +76,30 @@ def setup_tetris_card():
   # Update the existing card template.
   template = note_type["tmpls"][0]
   template["qfmt"] = html
-  template["afmt"] = """
-  {{FrontSide}}
-  <hr id="answer">
-  <h3>Reference answer</h3>
-  {{Answer}}
-  """
+  template["afmt"] = "{{FrontSide}}"
 
   mw.col.models.update_dict(note_type)
 
 
+# give website to know if anki is on front or back of card
+def on_card_will_show(html, card, context):
+  if context not in ("reviewQuestion", "reviewAnswer"):
+    return html
+
+  side = "back" if context == "reviewAnswer" else "front"
+
+  return (
+    f"""
+    <script>
+        window.ankiCardSide = "{side}";
+    </script>
+    """
+    + html
+  )
+
+
 gui_hooks.profile_did_open.append(setup_tetris_card)
+gui_hooks.card_will_show.append(on_card_will_show)
 
 
 def on_js_message(handled, message, context):
