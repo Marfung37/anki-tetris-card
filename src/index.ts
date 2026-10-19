@@ -138,8 +138,8 @@ function drawGame(context: CanvasRenderingContext2D, game: TetrisQuiz) {
   drawBoard(context, game.board);
   drawPiece(context, game.active);
 
-  if (showAnswer && game.validTargetFumens.length > 0) {
-    drawFumen(context, game.validTargetFumens[0], '4D', game.board);
+  if (showAnswer && game.runningTargetFumen !== null) {
+    drawFumen(context, game.runningTargetFumen, '4D', game.board);
   }
 
   // Ghost

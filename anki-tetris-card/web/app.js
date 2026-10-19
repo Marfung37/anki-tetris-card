@@ -2290,30 +2290,30 @@
     }
     return fumens;
   }
-  function fumenCountPieces(fumen, frequencyCounter) {
-    const pages = decodeWrapper(fumen);
-    const field = pages[0].field;
-    const height = getFieldHeight(field);
-    for (const piece of BAG) {
-      frequencyCounter[piece.charCodeAt(0)] = 0;
-    }
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < PCSIZE; x++) {
-        const mino = field.at(x, y);
-        if (mino != "_" && mino != "X") {
-          frequencyCounter[mino.charCodeAt(0)]++;
+  function setInitialFumenState(afterFumen, initialFumen) {
+    const afterPages = decodeWrapper(afterFumen);
+    const initialPages = decodeWrapper(initialFumen);
+    for (let i = 0; i < Math.min(afterPages.length, initialPages.length); i++) {
+      const aField = afterPages[i].field;
+      const iField = initialPages[i].field;
+      const height = getFieldHeight(iField);
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < PCSIZE; col++) {
+          if (iField.at(col, row) !== "_") {
+            aField.set(col, row, "X");
+          }
         }
       }
+      afterPages[i].field = aField;
     }
-    for (const piece of BAG) {
-      frequencyCounter[piece.charCodeAt(0)] >>= 2;
-    }
+    return import_tetris_fumen.encoder.encode(afterPages);
   }
   function fumenClearLines(fumen, lines) {
     const pages = decodeWrapper(fumen);
+    lines.sort();
     for (const page of pages) {
       const rows = page.field.str({ garbage: false }).split("\n");
-      const height = rows.length;
+      let height = rows.length;
       for (const line of lines) {
         rows.splice(height - 1 - line, 1);
       }
@@ -3362,6 +3362,7 @@ ${end}`);
       return this.board.place(this.active, clear);
     }
     getNextPiece(resetted) {
+      console.log("Getting next piece");
       if (this.queue.length == 0) {
         if (this.holdPiece != 0 /* _ */) {
           this.setActive(this.holdPiece);
@@ -3369,8 +3370,7 @@ ${end}`);
         } else {
           this.reset(this.softReset);
         }
-      }
-      if (!resetted) {
+      } else if (!resetted) {
         this.setActive(this.queue.poll());
       }
     }
@@ -4067,14 +4067,19 @@ ${end}`);
       __publicField(this, "coverMask");
       __publicField(this, "validTargetFumens");
       __publicField(this, "answered");
+      // fumen for the answer that matches line clears from user
+      __publicField(this, "runningTargetFumen");
       // frequency map of pieces in target fumen
       __publicField(this, "correctBuild");
       __publicField(this, "buildLength");
+      __publicField(this, "targetsPopulated");
       this.initialFumen = initialFumen;
       this.targetFumen = targetFumen;
       this.coverMask = coverMask;
       this.validTargetFumens = [];
+      this.runningTargetFumen = null;
       this.answered = false;
+      this.targetsPopulated = false;
       this.correctBuild = new Uint8Array(128).fill(0);
       this.buildLength = -1;
       this.board.fromFumen(this.initialFumen);
@@ -4110,36 +4115,51 @@ ${end}`);
     // targetFumen can contain multiple accepted final board states, find which ones are covered
     getValidTargets() {
       this.validTargetFumens = [];
+      this.correctBuild.fill(0);
+      this.buildLength = -1;
       const fumens = fumenSplit(this.targetFumen);
       if (fumens.length > 0) {
-        const queue = (this.holdPiece != 0 /* _ */ ? PieceEnum[this.holdPiece] : "") + PieceEnum[this.active.type] + this.queue.queue.map((piece) => PieceEnum[piece]).join("");
+        const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join("");
         for (const fumen of fumens) {
-          if (ge(fumen, { order: queue, hold: 1, srs180: true }).length > 0) {
+          const setFumen = setInitialFumenState(fumen, this.initialFumen);
+          const gluedFumen = ge(setFumen, { order: queue, hold: 1, srs180: true });
+          if (gluedFumen.length > 0) {
             this.validTargetFumens.push(fumen);
+            if (this.buildLength == -1) {
+              const pages = decodeWrapper(gluedFumen[0]);
+              this.buildLength = pages.length;
+              for (const page of pages) {
+                const index = page.operation.type.charCodeAt(0);
+                this.correctBuild[index]++;
+              }
+            }
           }
         }
+      }
+      console.log(this.buildLength);
+      for (let piece of BAG) {
+        const index = piece.charCodeAt(0);
+        console.log(piece, this.correctBuild[index]);
       }
       if (this.validTargetFumens.length == 0) {
         throw new Error("Invalid parameters to quiz as no valid target answer for given queue " + this.currentQueue);
       }
-      const initialBuild = new Uint8Array(128).fill(0);
-      fumenCountPieces(this.initialFumen, initialBuild);
-      fumenCountPieces(this.validTargetFumens[0], this.correctBuild);
-      this.buildLength = 0;
-      for (const piece of BAG) {
-        const index = piece.charCodeAt(0);
-        this.correctBuild[index] -= initialBuild[index];
-        this.buildLength += this.correctBuild[index];
-      }
+      this.runningTargetFumen = this.validTargetFumens[0];
+      this.targetsPopulated = true;
     }
     lock(piece = null) {
+      if (!this.targetsPopulated) {
+        throw new Error("Expected reset() to be run after initializing TetrisQuiz object");
+      }
       const lineclears = this.harddrop(piece, true);
+      console.log(lineclears);
       if (lineclears.length > 0) {
-        this.validTargetFumens = this.validTargetFumens.map((fumen) => fumenClearLines(fumen, lineclears));
+        this.runningTargetFumen = fumenClearLines(this.runningTargetFumen, lineclears);
       }
       if (this.pieceCount == this.buildLength) {
         const pages = [];
         const currentBuild = new Uint8Array(128).fill(0);
+        console.log("Checking Solution");
         for (const operation of this.operations.slice(
           this.totalPieceCount - this.pieceCount,
           this.totalPieceCount
@@ -4162,19 +4182,24 @@ ${end}`);
             break;
           }
         }
+        console.log("Checking Correct Pieces:", correctPieces);
         if (correctPieces) {
           pages[0].field = decodeWrapper(this.initialFumen)[0].field;
           const fumen = xe(import_tetris_fumen7.encoder.encode(pages));
           let congruent = false;
+          console.log("Game Fumen:", fumen);
           for (const validFumen of this.validTargetFumens) {
+            console.log("Solution Expected:", validFumen);
             congruent || (congruent = fumen == validFumen);
           }
+          console.log("Checking Congruent Boards:", congruent);
           this.answered = congruent;
           const event = congruent ? "correct" : "wrong";
           if (!this.simulating) this.pendingEvents.push(event);
         }
       }
       this.getNextPiece(false);
+      console.log("Got next piece");
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -4378,8 +4403,8 @@ ${end}`);
   function drawGame(context, game2) {
     drawBoard(context, game2.board);
     drawPiece(context, game2.active);
-    if (showAnswer && game2.validTargetFumens.length > 0) {
-      drawFumen(context, game2.validTargetFumens[0], "4D", game2.board);
+    if (showAnswer && game2.runningTargetFumen !== null) {
+      drawFumen(context, game2.runningTargetFumen, "4D", game2.board);
     }
     drawPiece(context, game2.getGhost(), "4D");
   }

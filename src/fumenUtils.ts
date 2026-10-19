@@ -1,6 +1,6 @@
 import { decoder, encoder, Field, type Page, type Mino } from 'tetris-fumen';
 import type { Fumen } from './types';
-import { BAG, PCSIZE, mirrorPieces } from './constants';
+import { PCSIZE, mirrorPieces } from './constants';
 
 function getFieldHeight(field: Field): number {
   return field.str({ reduced: true, garbage: false }).split('\n').length;
@@ -229,37 +229,36 @@ export function fumenGetNumPages(fumen: Fumen): number {
   return pages.length;
 }
 
-// count from first page number of each piece
-export function fumenCountPieces(fumen: Fumen, frequencyCounter: Uint8Array): void {
-  const pages = decodeWrapper(fumen);
-  const field = pages[0].field;
-  const height = getFieldHeight(field);
+// set all minos to gray from initial fumen in after fumen
+export function setInitialFumenState(afterFumen: Fumen, initialFumen: Fumen): Fumen {
+  const afterPages = decodeWrapper(afterFumen);
+  const initialPages = decodeWrapper(initialFumen);
 
-  for (const piece of BAG) {
-    frequencyCounter[piece.charCodeAt(0)] = 0;
-  }
+  for (let i = 0; i < Math.min(afterPages.length, initialPages.length); i++) {
+    const aField = afterPages[i].field;
+    const iField = initialPages[i].field;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < PCSIZE; x++) {
-      const mino = field.at(x, y);
-      if (mino != '_' && mino != 'X') {
-        frequencyCounter[mino.charCodeAt(0)]++;
+    const height = getFieldHeight(iField)
+    for (let row = 0; row < height; row++) {
+      for (let col = 0; col < PCSIZE; col++) {
+        if (iField.at(col, row) !== '_') {
+          aField.set(col, row, 'X');
+        }
       }
     }
+    afterPages[i].field = aField;
   }
-
-  for (const piece of BAG) {
-    frequencyCounter[piece.charCodeAt(0)] >>= 2;
-  }
+  return encoder.encode(afterPages) as Fumen;
 }
 
 // clear only lines specify in lines
 export function fumenClearLines(fumen: Fumen, lines: number[]): Fumen {
   const pages = decodeWrapper(fumen);
 
+  lines.sort();
   for (const page of pages) {
     const rows = page.field.str({ garbage: false }).split('\n');
-    const height = rows.length;
+    let height = rows.length;
     for (const line of lines) {
       rows.splice(height - 1 - line, 1);
     }
