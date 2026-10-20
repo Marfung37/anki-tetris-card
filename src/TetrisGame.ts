@@ -57,11 +57,7 @@ export class TetrisGame {
 
   protected fillBags: boolean;
 
-  constructor(
-    pattern: string = '',
-    fillBags: boolean = false,
-    handling: Tuning = DEFAULT_TUNING
-  ) {
+  constructor(pattern: string = '', fillBags: boolean = false, handling: Tuning = DEFAULT_TUNING) {
     this.handling = handling;
     this.pieceCount = 0;
     this.totalPieceCount = 0;
@@ -99,7 +95,8 @@ export class TetrisGame {
   }
 
   protected setActive(piece: PieceEnum): void {
-    if ([PieceEnum._, PieceEnum.X].includes(piece)) throw new Error('Unable to set active piece as gotten invalid piece');
+    if ([PieceEnum._, PieceEnum.X].includes(piece))
+      throw new Error('Unable to set active piece as gotten invalid piece');
     this.active = new TetrisBoardPiece(INITIALX, INITIALY, piece, Rotation.spawn);
   }
 
@@ -239,7 +236,7 @@ export class TetrisGame {
 
   protected getNextPiece(resetted: boolean): void {
     // DEBUG
-    console.log("Getting next piece")
+    console.log('Getting next piece');
     if (this.queue.length == 0) {
       if (this.holdPiece != PieceEnum._) {
         this.setActive(this.holdPiece);

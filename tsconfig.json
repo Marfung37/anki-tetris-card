@@ -2,20 +2,12 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-    "lib": [
-      "ES2023",
-      "dom"
-    ],
+    "lib": ["ES2023", "dom"],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "strict": true,
     "noEmit": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules"]
 }

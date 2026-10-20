@@ -1,12 +1,7 @@
 import { TetrisGame, DEFAULT_TUNING } from './TetrisGame';
 import { type ParsedPattern, sfinderPieces } from './pieces';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
-import {
-  decodeWrapper,
-  fumenSplit,
-  fumenClearLines,
-  setInitialFumenState
-} from './fumenUtils';
+import { decodeWrapper, fumenSplit, fumenClearLines, setInitialFumenState } from './fumenUtils';
 import { glueFumen, unglueFumen } from 'glue-fumen';
 import { PieceEnum, Rotation } from './pieceData';
 import { encoder, Field } from 'tetris-fumen';
@@ -15,7 +10,6 @@ import type { Fumen, Queue } from './types';
 import type { Tuning } from './TetrisGame';
 import type { Operation } from 'glue-fumen';
 import type { Seed } from './random';
-
 
 interface SaveState {
   parsedQueuePattern: ParsedPattern | null;
@@ -30,7 +24,7 @@ interface SaveState {
 // map for hexdigits to number of set bits
 const HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
 for (let i = 0; i < 16; i++) {
-  const count = i.toString(2).replace(/0/g, "").length;
+  const count = i.toString(2).replace(/0/g, '').length;
   const hex = i.toString(16);
 
   HEX_TO_SET_BIT_COUNT[hex.charCodeAt(0)] = count;
@@ -84,7 +78,6 @@ export class TetrisQuiz extends TetrisGame {
     this.board.fromFumen(this.initialFumen);
   }
 
-
   setInitial(fumen: Fumen) {
     this.initialFumen = fumen;
     this.fullReset();
@@ -100,10 +93,9 @@ export class TetrisQuiz extends TetrisGame {
     this.fullReset();
   }
 
-
   reset(soft: boolean = false): void {
     super.reset(soft);
-    this.pendingEvents.push('reset')
+    this.pendingEvents.push('reset');
     this.answered = false;
     this.board.fromFumen(this.initialFumen);
     this.getValidTargets();
@@ -141,7 +133,7 @@ export class TetrisQuiz extends TetrisGame {
             const pages = decodeWrapper(gluedFumen[0]);
             this.buildLength = pages.length;
             for (const page of pages) {
-              const index = page.operation!.type.charCodeAt(0)
+              const index = page.operation!.type.charCodeAt(0);
               this.correctBuild[index]++;
             }
           }
@@ -149,14 +141,16 @@ export class TetrisQuiz extends TetrisGame {
       }
     }
     // DEBUG
-    console.log(this.buildLength)
+    console.log(this.buildLength);
     for (let piece of BAG) {
-      const index = piece.charCodeAt(0)
-      console.log(piece, this.correctBuild[index])
+      const index = piece.charCodeAt(0);
+      console.log(piece, this.correctBuild[index]);
     }
 
     if (this.validTargetFumens.length == 0) {
-      throw new Error("Invalid parameters to quiz as no valid target answer for given queue " + this.currentQueue)
+      throw new Error(
+        'Invalid parameters to quiz as no valid target answer for given queue ' + this.currentQueue
+      );
     }
     // set the answer to the first valid fumen
     this.runningTargetFumen = this.validTargetFumens[0];
@@ -177,24 +171,23 @@ export class TetrisQuiz extends TetrisGame {
     this.targetsPopulated = true;
   }
 
-
   lock(piece: TetrisBoardPiece | null = null) {
     if (!this.targetsPopulated) {
-      throw new Error("Expected reset() to be run after initializing TetrisQuiz object")
+      throw new Error('Expected reset() to be run after initializing TetrisQuiz object');
     }
 
     const lineclears = this.harddrop(piece, true);
 
     // clear lines so correct setup shows up with the lines cleared
     if (lineclears.length > 0) {
-      this.runningTargetFumen = fumenClearLines(this.runningTargetFumen as Fumen, lineclears)
+      this.runningTargetFumen = fumenClearLines(this.runningTargetFumen as Fumen, lineclears);
     }
 
     if (this.pieceCount == this.buildLength) {
       const pages = [];
       const currentBuild = new Uint8Array(128).fill(0);
       // DEBUG
-      console.log("Checking Solution")
+      console.log('Checking Solution');
 
       for (const operation of this.operations.slice(
         this.totalPieceCount - this.pieceCount,
@@ -214,7 +207,7 @@ export class TetrisQuiz extends TetrisGame {
       // check if correct pieces used
       let correctPieces: boolean = true;
       for (const piece of BAG) {
-        const index = piece.charCodeAt(0)
+        const index = piece.charCodeAt(0);
         if (currentBuild[index] != this.correctBuild[index]) {
           correctPieces = false;
           break;
@@ -222,21 +215,21 @@ export class TetrisQuiz extends TetrisGame {
       }
 
       // DEBUG
-      console.log("Checking Correct Pieces:", correctPieces)
+      console.log('Checking Correct Pieces:', correctPieces);
 
       if (correctPieces) {
         pages[0].field = decodeWrapper(this.initialFumen)[0].field;
         const fumen = unglueFumen(encoder.encode(pages)) as Fumen;
 
         let congruent: boolean = false;
-        console.log("Game Fumen:", fumen)
+        console.log('Game Fumen:', fumen);
         for (const validFumen of this.validTargetFumens) {
-          console.log("Solution Expected:", validFumen)
+          console.log('Solution Expected:', validFumen);
           congruent ||= fumen == validFumen;
         }
 
         // DEBUG
-        console.log("Checking Congruent Boards:", congruent)
+        console.log('Checking Congruent Boards:', congruent);
 
         this.answered = congruent;
         const event = congruent ? 'correct' : 'wrong';
@@ -245,7 +238,7 @@ export class TetrisQuiz extends TetrisGame {
     }
 
     this.getNextPiece(false);
-    console.log("Got next piece")
+    console.log('Got next piece');
 
     // topped out
     if (this.checkCollide(this.active)) {
@@ -261,8 +254,8 @@ export class TetrisQuiz extends TetrisGame {
       coverMask: this.coverMask,
       fillBags: this.fillBags,
       operations: this.operations,
-      seed: this.seed,
-    }
+      seed: this.seed
+    };
   }
 
   restore(state: SaveState) {

@@ -8,13 +8,13 @@ import { PCSIZE, BOARDHEIGHT } from './constants';
 import { Fumen, Mino } from './types';
 import { decodeWrapper } from './fumenUtils';
 
-const gameCtn = document.querySelector<HTMLDivElement>("#game-container");
-const boardCanvas = document.querySelector<HTMLCanvasElement>("#board");
-const queueCanvas = document.querySelector<HTMLCanvasElement>("#queue");
-const holdCanvas = document.querySelector<HTMLCanvasElement>("#hold");
+const gameCtn = document.querySelector<HTMLDivElement>('#game-container');
+const boardCanvas = document.querySelector<HTMLCanvasElement>('#board');
+const queueCanvas = document.querySelector<HTMLCanvasElement>('#queue');
+const holdCanvas = document.querySelector<HTMLCanvasElement>('#hold');
 
 if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
-  throw new Error("Required HTML elements are missing");
+  throw new Error('Required HTML elements are missing');
 }
 
 let game: TetrisQuiz;
@@ -37,7 +37,6 @@ queueCanvas.height = 14 * CELL_SIZE;
 holdCanvas.width = 4 * CELL_SIZE;
 holdCanvas.height = 2 * CELL_SIZE;
 
-
 const boardCtx = boardCanvas.getContext('2d')!;
 const queueCtx = queueCanvas.getContext('2d')!;
 const holdCtx = holdCanvas.getContext('2d')!;
@@ -47,25 +46,29 @@ holdCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
 boardCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
 queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
 
-gameCtn.addEventListener("keydown", handleKeyDown)
-gameCtn.addEventListener("keyup", handleKeyUp)
+gameCtn.addEventListener('keydown', handleKeyDown);
+gameCtn.addEventListener('keyup', handleKeyUp);
 
-game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.targetFumen, null, parameters.fillBag == 'T');
+game = new TetrisQuiz(
+  parameters.pattern,
+  parameters.initialFumen,
+  parameters.targetFumen,
+  null,
+  parameters.fillBag == 'T'
+);
 game.reset(false);
 game.loadHandling(tuning);
 
-const saved = sessionStorage.getItem("tetris-state");
+const saved = sessionStorage.getItem('tetris-state');
 
 if (saved) {
   showAnswer = true;
   game.restore(JSON.parse(saved));
-  sessionStorage.removeItem("tetris-state");
+  sessionStorage.removeItem('tetris-state');
 }
-if (cardSide == "back") {
+if (cardSide == 'back') {
   showAnswer = !game.answered;
 }
-
-
 
 let frame: DOMHighResTimeStamp;
 const loop = (timestamp: number) => {
@@ -98,8 +101,7 @@ function focusGame(): void {
 function handleKeyDown(event: KeyboardEvent) {
   if (event.code == 'KeyZ' && event.ctrlKey) {
     actions.add('undo');
-  }
-  else actions.add(keybinds.lookup[event.code]);
+  } else actions.add(keybinds.lookup[event.code]);
   // You can also stop scrolling with space/arrows here
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
     event.preventDefault();
@@ -114,15 +116,15 @@ function handleEvents() {
   for (let event of game.pendingEvents) {
     switch (event) {
       case 'reset':
-        showAnswer = cardSide == "back";
+        showAnswer = cardSide == 'back';
         break;
       case 'correct':
         showAnswer = false;
-        if (cardSide == "front") {
+        if (cardSide == 'front') {
           const state = game.save();
 
-          sessionStorage.setItem("tetris-state", JSON.stringify(state));
-          pycmd("tetris:answer")
+          sessionStorage.setItem('tetris-state', JSON.stringify(state));
+          pycmd('tetris:answer');
         }
         break;
       case 'wrong':

@@ -238,7 +238,7 @@ export function setInitialFumenState(afterFumen: Fumen, initialFumen: Fumen): Fu
     const aField = afterPages[i].field;
     const iField = initialPages[i].field;
 
-    const height = getFieldHeight(iField)
+    const height = getFieldHeight(iField);
     for (let row = 0; row < height; row++) {
       for (let col = 0; col < PCSIZE; col++) {
         if (iField.at(col, row) !== '_') {

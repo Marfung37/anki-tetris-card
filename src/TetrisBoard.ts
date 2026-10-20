@@ -79,7 +79,7 @@ export class TetrisBoard {
   }
 
   fromFumen(fumen: Fumen) {
-    const fumenCellToCell = (cell: string) => PieceEnum[cell as Mino]
+    const fumenCellToCell = (cell: string) => PieceEnum[cell as Mino];
     const rows = decodeWrapper(fumen)[0].field.str({ reduced: true, garbage: false }).split('\n');
     for (let i = 0; i < rows.length; i++) {
       for (let j = 0; j < this.width; j++) {
@@ -104,6 +104,7 @@ export class TetrisBoard {
   toString(): string {
     return this.board
       .toReversed()
-      .map((row: PieceEnum[]) => row.map((val: PieceEnum) => PieceEnum[val]).join('')).join('\n');
+      .map((row: PieceEnum[]) => row.map((val: PieceEnum) => PieceEnum[val]).join(''))
+      .join('\n');
   }
 }
