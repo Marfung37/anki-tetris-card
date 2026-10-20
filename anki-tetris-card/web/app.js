@@ -2152,36 +2152,6 @@
     return PieceEnum[piece];
   }
 
-  // src/lib/TetrisBoardPiece.ts
-  var TetrisBoardPiece = class _TetrisBoardPiece {
-    constructor(x, y, type, rotation) {
-      __publicField(this, "x");
-      __publicField(this, "y");
-      __publicField(this, "type");
-      __publicField(this, "rotation");
-      this.x = x;
-      this.y = y;
-      this.type = type;
-      this.rotation = rotation;
-    }
-    getMinos() {
-      return get_offsets(this.type, this.rotation).map(([dx, dy]) => ({
-        x: this.x + dx,
-        y: this.y + dy
-      }));
-    }
-    getColor() {
-      return get_colour(this.type);
-    }
-    move(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-    }
-    copy() {
-      return new _TetrisBoardPiece(this.x, this.y, this.type, this.rotation);
-    }
-  };
-
   // src/lib/TetrisQueue.ts
   var BAGSIZE = 7;
   var TetrisQueue = class {
@@ -2402,6 +2372,36 @@
     }
     toString() {
       return this.board.toReversed().map((row) => row.map((val) => PieceEnum[val]).join("")).join("\n");
+    }
+  };
+
+  // src/lib/TetrisBoardPiece.ts
+  var TetrisBoardPiece = class _TetrisBoardPiece {
+    constructor(x, y, type, rotation) {
+      __publicField(this, "x");
+      __publicField(this, "y");
+      __publicField(this, "type");
+      __publicField(this, "rotation");
+      this.x = x;
+      this.y = y;
+      this.type = type;
+      this.rotation = rotation;
+    }
+    getMinos() {
+      return get_offsets(this.type, this.rotation).map(([dx, dy]) => ({
+        x: this.x + dx,
+        y: this.y + dy
+      }));
+    }
+    getColor() {
+      return get_colour(this.type);
+    }
+    move(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+    }
+    copy() {
+      return new _TetrisBoardPiece(this.x, this.y, this.type, this.rotation);
     }
   };
 
@@ -4305,111 +4305,12 @@ ${end}`);
   };
   var keybinds = new Keybind(DEFAULT);
 
-  // src/index.ts
-  var gameCtn = document.querySelector("#game-container");
-  var boardCanvas = document.querySelector("#board");
-  var queueCanvas = document.querySelector("#queue");
-  var holdCanvas = document.querySelector("#hold");
-  if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
-    throw new Error("Required HTML elements are missing");
-  }
-  var actions = /* @__PURE__ */ new Set();
-  var showAnswer = false;
+  // src/render.ts
   var CELL_SIZE = 24;
-  var controls = window.config.controls;
-  var tuning = window.config.tuning;
-  keybinds.reset(controls);
-  var parameters = window.parameters;
-  var cardSide = window.ankiCardSide;
-  boardCanvas.width = PCSIZE * CELL_SIZE;
-  boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
-  queueCanvas.width = 4 * CELL_SIZE;
-  queueCanvas.height = 14 * CELL_SIZE;
-  holdCanvas.width = 4 * CELL_SIZE;
-  holdCanvas.height = 2 * CELL_SIZE;
-  var boardCtx = boardCanvas.getContext("2d");
-  var queueCtx = queueCanvas.getContext("2d");
-  var holdCtx = holdCanvas.getContext("2d");
-  holdCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
-  boardCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
-  queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
-  gameCtn.addEventListener("keydown", handleKeyDown);
-  gameCtn.addEventListener("keyup", handleKeyUp);
-  var game = new TetrisQuiz(
-    parameters.pattern,
-    parameters.initialFumen,
-    parameters.targetFumen,
-    null,
-    parameters.fillBag == "T"
-  );
-  game.reset(false);
-  game.loadHandling(tuning);
-  var saved = sessionStorage.getItem("tetris-state");
-  if (saved) {
-    showAnswer = true;
-    game.restore(JSON.parse(saved));
-    sessionStorage.removeItem("tetris-state");
-  }
-  if (cardSide == "back") {
-    showAnswer = !game.answered;
-  }
-  var loop = (timestamp) => {
-    game.tick(timestamp, actions);
-    const tmpActions = /* @__PURE__ */ new Set();
-    if (actions.has("left")) tmpActions.add("left");
-    if (actions.has("right")) tmpActions.add("right");
-    if (actions.has("sd")) tmpActions.add("sd");
-    actions = tmpActions;
-    handleEvents();
-    drawGame(boardCtx, game);
-    drawQueue(queueCtx, game.queue);
-    drawHold(holdCtx, game.holdPiece);
-    requestAnimationFrame(loop);
-  };
-  requestAnimationFrame(() => {
-    focusGame();
-  });
-  requestAnimationFrame(loop);
-  function focusGame() {
-    gameCtn?.focus();
-  }
-  function handleKeyDown(event) {
-    if (event.code == "KeyZ" && event.ctrlKey) {
-      actions.add("undo");
-    } else actions.add(keybinds.lookup[event.code]);
-    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
-      event.preventDefault();
-    }
-  }
-  function handleKeyUp(event) {
-    actions.delete(keybinds.lookup[event.code]);
-  }
-  function handleEvents() {
-    for (const event of game.pendingEvents) {
-      switch (event) {
-        case "reset":
-          showAnswer = cardSide == "back";
-          break;
-        case "correct":
-          showAnswer = false;
-          if (cardSide == "front") {
-            const state = game.save();
-            sessionStorage.setItem("tetris-state", JSON.stringify(state));
-            pycmd("tetris:answer");
-          }
-          break;
-        case "wrong":
-          break;
-        case "missing setup":
-          break;
-      }
-    }
-    game.pendingEvents = [];
-  }
-  function drawGame(context, game2) {
+  function drawGame(context, game2, showAnswer2) {
     drawBoard(context, game2.board);
     drawPiece(context, game2.active);
-    if (showAnswer && game2.runningTargetFumen !== null) {
+    if (showAnswer2 && game2.runningTargetFumen !== null) {
       drawFumen(context, game2.runningTargetFumen, "4D", game2.board);
     }
     drawPiece(context, game2.getGhost(), "4D");
@@ -4439,9 +4340,6 @@ ${end}`);
           context.fillRect(x, y, 1, 1);
         }
       }
-    }
-    if (document.activeElement !== gameCtn) {
-      drawOOF(context);
     }
   }
   function drawQueue(context, queue) {
@@ -4513,5 +4411,109 @@ ${end}`);
     context.textBaseline = "middle";
     context.fillText("OUT OF FOCUS", context.canvas.width / 2, context.canvas.height / 2);
     context.setTransform(transform);
+  }
+
+  // src/index.ts
+  var gameCtn = document.querySelector("#game-container");
+  var boardCanvas = document.querySelector("#board");
+  var queueCanvas = document.querySelector("#queue");
+  var holdCanvas = document.querySelector("#hold");
+  if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
+    throw new Error("Required HTML elements are missing");
+  }
+  var actions = /* @__PURE__ */ new Set();
+  var showAnswer = false;
+  var controls = window.config.controls;
+  var tuning = window.config.tuning;
+  keybinds.reset(controls);
+  var parameters = window.parameters;
+  var cardSide = window.ankiCardSide;
+  boardCanvas.width = PCSIZE * CELL_SIZE;
+  boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
+  queueCanvas.width = 4 * CELL_SIZE;
+  queueCanvas.height = 14 * CELL_SIZE;
+  holdCanvas.width = 4 * CELL_SIZE;
+  holdCanvas.height = 2 * CELL_SIZE;
+  var boardCtx = boardCanvas.getContext("2d");
+  var queueCtx = queueCanvas.getContext("2d");
+  var holdCtx = holdCanvas.getContext("2d");
+  holdCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
+  boardCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
+  queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
+  gameCtn.addEventListener("keydown", handleKeyDown);
+  gameCtn.addEventListener("keyup", handleKeyUp);
+  var game = new TetrisQuiz(
+    parameters.pattern,
+    parameters.initialFumen,
+    parameters.targetFumen,
+    null,
+    parameters.fillBag == "T"
+  );
+  game.reset(false);
+  game.loadHandling(tuning);
+  var saved = sessionStorage.getItem("tetris-state");
+  if (saved) {
+    showAnswer = true;
+    game.restore(JSON.parse(saved));
+    sessionStorage.removeItem("tetris-state");
+  }
+  if (cardSide == "back") {
+    showAnswer = !game.answered;
+  }
+  var loop = (timestamp) => {
+    game.tick(timestamp, actions);
+    const tmpActions = /* @__PURE__ */ new Set();
+    if (actions.has("left")) tmpActions.add("left");
+    if (actions.has("right")) tmpActions.add("right");
+    if (actions.has("sd")) tmpActions.add("sd");
+    actions = tmpActions;
+    handleEvents();
+    drawGame(boardCtx, game, showAnswer);
+    drawQueue(queueCtx, game.queue);
+    drawHold(holdCtx, game.holdPiece);
+    if (document.activeElement !== gameCtn) {
+      drawOOF(boardCtx);
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(() => {
+    focusGame();
+  });
+  requestAnimationFrame(loop);
+  function focusGame() {
+    gameCtn?.focus();
+  }
+  function handleKeyDown(event) {
+    if (event.code == "KeyZ" && event.ctrlKey) {
+      actions.add("undo");
+    } else actions.add(keybinds.lookup[event.code]);
+    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+      event.preventDefault();
+    }
+  }
+  function handleKeyUp(event) {
+    actions.delete(keybinds.lookup[event.code]);
+  }
+  function handleEvents() {
+    for (const event of game.pendingEvents) {
+      switch (event) {
+        case "reset":
+          showAnswer = cardSide == "back";
+          break;
+        case "correct":
+          showAnswer = false;
+          if (cardSide == "front") {
+            const state = game.save();
+            sessionStorage.setItem("tetris-state", JSON.stringify(state));
+            pycmd("tetris:answer");
+          }
+          break;
+        case "wrong":
+          break;
+        case "missing setup":
+          break;
+      }
+    }
+    game.pendingEvents = [];
   }
 })();
