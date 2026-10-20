@@ -1,12 +1,12 @@
-import { TetrisBoardPiece } from './TetrisBoardPiece';
-import { get_colour, PieceEnum, Rotation } from './pieceData';
-import { TetrisQueue } from './TetrisQueue';
-import { TetrisBoard } from './TetrisBoard';
-import { TetrisQuiz } from './TetrisQuiz';
-import { type Action, keybinds } from './Keybind';
-import { PCSIZE, BOARDHEIGHT } from './constants';
-import { Fumen, Mino } from './types';
-import { decodeWrapper } from './fumenUtils';
+import { TetrisBoardPiece } from './lib/TetrisBoardPiece';
+import { get_colour, PieceEnum, Rotation } from './lib/pieceData';
+import { TetrisQueue } from './lib/TetrisQueue';
+import { TetrisBoard } from './lib/TetrisBoard';
+import { TetrisQuiz } from './lib/TetrisQuiz';
+import { type Action, keybinds } from './lib/Keybind';
+import { PCSIZE, BOARDHEIGHT } from './lib/constants';
+import { Fumen, Mino } from './lib/types';
+import { decodeWrapper } from './lib/fumenUtils';
 
 const gameCtn = document.querySelector<HTMLDivElement>('#game-container');
 const boardCanvas = document.querySelector<HTMLCanvasElement>('#board');
@@ -241,13 +241,13 @@ function drawFumen(
   context: CanvasRenderingContext2D,
   fumen: Fumen,
   opacity: string = '',
-  board: TetrisBoard | null = null
+  board: TetrisBoard
 ) {
   const page = decodeWrapper(fumen)[0];
   const field = page.field.str({ reduced: true, garbage: false }).split('\n').toReversed();
   for (let row = 0; row < field.length; row++) {
     for (let col = 0; col < PCSIZE; col++) {
-      if (board !== null && board.isFilled(row, col)) {
+      if (board.isFilled(row, col) || field[row][col] === '_') {
         continue;
       }
       const cell = field[row][col];

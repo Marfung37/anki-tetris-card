@@ -1680,7 +1680,7 @@
     }
   });
 
-  // src/pieceData.ts
+  // src/lib/pieceData.ts
   var offsets = [
     [],
     // T
@@ -2152,7 +2152,7 @@
     return PieceEnum[piece];
   }
 
-  // src/TetrisBoardPiece.ts
+  // src/lib/TetrisBoardPiece.ts
   var TetrisBoardPiece = class _TetrisBoardPiece {
     constructor(x, y, type, rotation) {
       __publicField(this, "x");
@@ -2182,7 +2182,7 @@
     }
   };
 
-  // src/TetrisQueue.ts
+  // src/lib/TetrisQueue.ts
   var BAGSIZE = 7;
   var TetrisQueue = class {
     constructor(previewSize, random, fillBags = true) {
@@ -2258,18 +2258,18 @@
     }
   };
 
-  // src/TetrisBoard.ts
+  // src/lib/TetrisBoard.ts
   var import_tetris_fumen2 = __toESM(require_tetris_fumen(), 1);
 
-  // src/fumenUtils.ts
+  // src/lib/fumenUtils.ts
   var import_tetris_fumen = __toESM(require_tetris_fumen(), 1);
 
-  // src/constants.ts
+  // src/lib/constants.ts
   var BAG = "TILJSZO";
   var PCSIZE = 10;
   var BOARDHEIGHT = 20;
 
-  // src/fumenUtils.ts
+  // src/lib/fumenUtils.ts
   function getFieldHeight(field) {
     return field.str({ reduced: true, garbage: false }).split("\n").length;
   }
@@ -2313,7 +2313,7 @@
     lines.sort();
     for (const page of pages) {
       const rows = page.field.str({ garbage: false }).split("\n");
-      let height = rows.length;
+      const height = rows.length;
       for (const line of lines) {
         rows.splice(height - 1 - line, 1);
       }
@@ -2322,7 +2322,7 @@
     return import_tetris_fumen.encoder.encode(pages);
   }
 
-  // src/TetrisBoard.ts
+  // src/lib/TetrisBoard.ts
   var TetrisBoard = class {
     constructor(width, height) {
       __publicField(this, "width");
@@ -2405,7 +2405,7 @@
     }
   };
 
-  // src/random.ts
+  // src/lib/random.ts
   function sfc32(a, b, c, d2) {
     return function() {
       a |= 0;
@@ -2446,7 +2446,7 @@
     }
   };
 
-  // src/pieces/defines.ts
+  // src/lib/pieces/defines.ts
   var PIECE_ORDER = new Int8Array(128).fill(255);
   PIECE_ORDER["T".charCodeAt(0)] = 0;
   PIECE_ORDER["I".charCodeAt(0)] = 1;
@@ -2464,7 +2464,7 @@
     return 0;
   }
 
-  // src/pieces/parser.ts
+  // src/lib/pieces/parser.ts
   var GEN_SPEC = [
     ["GEN_PIECES", "[TILJSZO*]|\\[\\^?(?:[TILJSZO]|\\[\\^?[TILJSZO]+\\])+\\]"],
     ["PERMUTE", "!|p\\d+"],
@@ -2793,7 +2793,7 @@
     }
   };
 
-  // src/pieces/evaluateFilter.ts
+  // src/lib/pieces/evaluateFilter.ts
   var OPERATORS = {
     "=": (a, b) => a == b,
     "!=": (a, b) => a != b,
@@ -2910,7 +2910,7 @@
     }
   }
 
-  // src/pieces/utils.ts
+  // src/lib/pieces/utils.ts
   var GeneratorFunction = Object.getPrototypeOf(function* () {
   }).constructor;
   var cache = {};
@@ -2945,7 +2945,7 @@ ${end}`);
     return result;
   }
 
-  // src/pieces/evaluateGenerator.ts
+  // src/lib/pieces/evaluateGenerator.ts
   function* permutations(pool, r) {
     const n = pool.length;
     r = r === void 0 ? n : r;
@@ -3104,7 +3104,7 @@ ${end}`);
     return perm(node.pool.length, node.permute);
   }
 
-  // src/pieces/sfinderPieces.ts
+  // src/lib/pieces/sfinderPieces.ts
   var parser = new Parser();
   function evaluateBlocks(blocks) {
     let runningQueues = [];
@@ -3193,7 +3193,7 @@ ${end}`);
     return choices[i];
   }
 
-  // src/TetrisGame.ts
+  // src/lib/TetrisGame.ts
   var PREVIEWSIZE = 5;
   var INITIALY = 19;
   var INITIALX = 4;
@@ -3250,7 +3250,8 @@ ${end}`);
       this.fullReset();
     }
     setActive(piece) {
-      if ([0 /* _ */, 8 /* X */].includes(piece)) throw new Error("Unable to set active piece as gotten invalid piece");
+      if ([0 /* _ */, 8 /* X */].includes(piece))
+        throw new Error("Unable to set active piece as gotten invalid piece");
       this.active = new TetrisBoardPiece(INITIALX, INITIALY, piece, 0 /* spawn */);
     }
     fullReset() {
@@ -4043,7 +4044,7 @@ ${end}`);
     return import_tetris_fumen6.encoder.encode([{ field: t.toField() }]);
   }
 
-  // src/TetrisQuiz.ts
+  // src/lib/TetrisQuiz.ts
   var import_tetris_fumen7 = __toESM(require_tetris_fumen(), 1);
   var HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
   for (let i = 0; i < 16; i++) {
@@ -4137,12 +4138,14 @@ ${end}`);
         }
       }
       console.log(this.buildLength);
-      for (let piece of BAG) {
+      for (const piece of BAG) {
         const index = piece.charCodeAt(0);
         console.log(piece, this.correctBuild[index]);
       }
       if (this.validTargetFumens.length == 0) {
-        throw new Error("Invalid parameters to quiz as no valid target answer for given queue " + this.currentQueue);
+        throw new Error(
+          "Invalid parameters to quiz as no valid target answer for given queue " + this.currentQueue
+        );
       }
       this.runningTargetFumen = this.validTargetFumens[0];
       this.targetsPopulated = true;
@@ -4152,7 +4155,6 @@ ${end}`);
         throw new Error("Expected reset() to be run after initializing TetrisQuiz object");
       }
       const lineclears = this.harddrop(piece, true);
-      console.log(lineclears);
       if (lineclears.length > 0) {
         this.runningTargetFumen = fumenClearLines(this.runningTargetFumen, lineclears);
       }
@@ -4245,7 +4247,7 @@ ${end}`);
     }
   };
 
-  // src/Keybind.ts
+  // src/lib/Keybind.ts
   var DEFAULT = {
     left: "ArrowLeft",
     right: "ArrowRight",
@@ -4311,7 +4313,6 @@ ${end}`);
   if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
     throw new Error("Required HTML elements are missing");
   }
-  var game;
   var actions = /* @__PURE__ */ new Set();
   var showAnswer = false;
   var CELL_SIZE = 24;
@@ -4334,7 +4335,13 @@ ${end}`);
   queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
   gameCtn.addEventListener("keydown", handleKeyDown);
   gameCtn.addEventListener("keyup", handleKeyUp);
-  game = new TetrisQuiz(parameters.pattern, parameters.initialFumen, parameters.targetFumen, null, parameters.fillBag == "T");
+  var game = new TetrisQuiz(
+    parameters.pattern,
+    parameters.initialFumen,
+    parameters.targetFumen,
+    null,
+    parameters.fillBag == "T"
+  );
   game.reset(false);
   game.loadHandling(tuning);
   var saved = sessionStorage.getItem("tetris-state");
@@ -4346,10 +4353,9 @@ ${end}`);
   if (cardSide == "back") {
     showAnswer = !game.answered;
   }
-  var frame;
   var loop = (timestamp) => {
     game.tick(timestamp, actions);
-    let tmpActions = /* @__PURE__ */ new Set();
+    const tmpActions = /* @__PURE__ */ new Set();
     if (actions.has("left")) tmpActions.add("left");
     if (actions.has("right")) tmpActions.add("right");
     if (actions.has("sd")) tmpActions.add("sd");
@@ -4358,12 +4364,12 @@ ${end}`);
     drawGame(boardCtx, game);
     drawQueue(queueCtx, game.queue);
     drawHold(holdCtx, game.holdPiece);
-    frame = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
   };
   requestAnimationFrame(() => {
     focusGame();
   });
-  frame = requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
   function focusGame() {
     gameCtn?.focus();
   }
@@ -4379,7 +4385,7 @@ ${end}`);
     actions.delete(keybinds.lookup[event.code]);
   }
   function handleEvents() {
-    for (let event of game.pendingEvents) {
+    for (const event of game.pendingEvents) {
       switch (event) {
         case "reset":
           showAnswer = cardSide == "back";
@@ -4420,7 +4426,7 @@ ${end}`);
       context.moveTo(0, y);
       context.lineTo(10, y);
     }
-    let transform = context.getTransform();
+    const transform = context.getTransform();
     context.resetTransform();
     context.strokeStyle = "#ffffff0E";
     context.lineWidth = 1;
@@ -4441,7 +4447,7 @@ ${end}`);
   function drawQueue(context, queue) {
     context.fillStyle = get_colour(0 /* _ */);
     context.fillRect(0, 0, 4, 14);
-    let preview = queue.preview();
+    const preview = queue.preview();
     for (let i = 0; i < Math.min(preview.length, 5); i++) {
       let shiftX = 0;
       let shiftY = 0;
@@ -4478,17 +4484,17 @@ ${end}`);
     if (opacity === void 0) {
       opacity = "";
     }
-    for (let { x, y } of piece.getMinos()) {
+    for (const { x, y } of piece.getMinos()) {
       context.fillStyle = get_colour(piece.type) + opacity;
       context.fillRect(x, y, 1, 1);
     }
   }
-  function drawFumen(context, fumen, opacity = "", board = null) {
+  function drawFumen(context, fumen, opacity = "", board) {
     const page = decodeWrapper(fumen)[0];
     const field = page.field.str({ reduced: true, garbage: false }).split("\n").toReversed();
     for (let row = 0; row < field.length; row++) {
       for (let col = 0; col < PCSIZE; col++) {
-        if (board !== null && board.isFilled(row, col)) {
+        if (board.isFilled(row, col) || field[row][col] === "_") {
           continue;
         }
         const cell = field[row][col];
@@ -4499,7 +4505,7 @@ ${end}`);
     }
   }
   function drawOOF(context) {
-    let transform = context.getTransform();
+    const transform = context.getTransform();
     context.resetTransform();
     context.font = `bold ${CELL_SIZE + 5}px Arial`;
     context.fillStyle = "rgba(235, 203, 139, 0.7)";
