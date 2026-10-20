@@ -17,7 +17,6 @@ if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
   throw new Error('Required HTML elements are missing');
 }
 
-let game: TetrisQuiz;
 let actions: Set<Action> = new Set<Action>();
 let showAnswer = false;
 
@@ -49,7 +48,7 @@ queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
 gameCtn.addEventListener('keydown', handleKeyDown);
 gameCtn.addEventListener('keyup', handleKeyUp);
 
-game = new TetrisQuiz(
+const game = new TetrisQuiz(
   parameters.pattern,
   parameters.initialFumen,
   parameters.targetFumen,
@@ -70,10 +69,9 @@ if (cardSide == 'back') {
   showAnswer = !game.answered;
 }
 
-let frame: DOMHighResTimeStamp;
 const loop = (timestamp: number) => {
   game.tick(timestamp, actions);
-  let tmpActions = new Set<Action>();
+  const tmpActions = new Set<Action>();
   if (actions.has('left')) tmpActions.add('left');
   if (actions.has('right')) tmpActions.add('right');
   if (actions.has('sd')) tmpActions.add('sd');
@@ -84,7 +82,7 @@ const loop = (timestamp: number) => {
   drawGame(boardCtx, game);
   drawQueue(queueCtx, game.queue);
   drawHold(holdCtx, game.holdPiece);
-  frame = requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 };
 
 // game starts as focus
@@ -92,7 +90,8 @@ requestAnimationFrame(() => {
   focusGame();
 });
 
-frame = requestAnimationFrame(loop);
+// start loop
+requestAnimationFrame(loop);
 
 function focusGame(): void {
   gameCtn?.focus();
@@ -113,7 +112,7 @@ function handleKeyUp(event: KeyboardEvent) {
 }
 
 function handleEvents() {
-  for (let event of game.pendingEvents) {
+  for (const event of game.pendingEvents) {
     switch (event) {
       case 'reset':
         showAnswer = cardSide == 'back';
@@ -162,7 +161,7 @@ function drawBoard(context: CanvasRenderingContext2D, board: TetrisBoard) {
     context.moveTo(0, y);
     context.lineTo(10, y);
   }
-  let transform = context.getTransform();
+  const transform = context.getTransform();
   context.resetTransform();
   context.strokeStyle = '#ffffff0E';
   context.lineWidth = 1;
@@ -187,7 +186,7 @@ function drawBoard(context: CanvasRenderingContext2D, board: TetrisBoard) {
 function drawQueue(context: CanvasRenderingContext2D, queue: TetrisQueue) {
   context.fillStyle = get_colour(PieceEnum._);
   context.fillRect(0, 0, 4, 14);
-  let preview = queue.preview();
+  const preview = queue.preview();
   for (let i = 0; i < Math.min(preview.length, 5); i++) {
     let shiftX = 0;
     let shiftY = 0;
@@ -232,7 +231,7 @@ function drawPiece(
   if (opacity === undefined) {
     opacity = '';
   }
-  for (let { x, y } of piece.getMinos()) {
+  for (const { x, y } of piece.getMinos()) {
     context.fillStyle = get_colour(piece.type) + opacity;
     context.fillRect(x, y, 1, 1);
   }
@@ -261,7 +260,7 @@ function drawFumen(
 }
 
 function drawOOF(context: CanvasRenderingContext2D) {
-  let transform = context.getTransform();
+  const transform = context.getTransform();
   context.resetTransform();
   context.font = `bold ${CELL_SIZE + 5}px Arial`;
   context.fillStyle = 'rgba(235, 203, 139, 0.7)';

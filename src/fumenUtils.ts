@@ -258,7 +258,7 @@ export function fumenClearLines(fumen: Fumen, lines: number[]): Fumen {
   lines.sort();
   for (const page of pages) {
     const rows = page.field.str({ garbage: false }).split('\n');
-    let height = rows.length;
+    const height = rows.length;
     for (const line of lines) {
       rows.splice(height - 1 - line, 1);
     }

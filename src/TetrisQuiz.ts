@@ -142,7 +142,7 @@ export class TetrisQuiz extends TetrisGame {
     }
     // DEBUG
     console.log(this.buildLength);
-    for (let piece of BAG) {
+    for (const piece of BAG) {
       const index = piece.charCodeAt(0);
       console.log(piece, this.correctBuild[index]);
     }
