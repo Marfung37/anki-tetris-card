@@ -13,7 +13,7 @@ import type { Seed } from './random';
 
 interface SaveState {
   parsedQueuePattern: ParsedPattern | null;
-  initialFumen: Fumen;
+  initialFumen: Fumen | null;
   targetFumen: Fumen;
   coverMask: string | null;
   fillBags: boolean;
@@ -38,8 +38,33 @@ function countSetBits(hexstr: string): number {
   return count;
 }
 
+function getNthSetBit(hexstr: string, index: number): number {
+  let count = 0;
+  for (let i = 0; i < hexstr.length; i++) {
+    const hexdigitBitCount = HEX_TO_SET_BIT_COUNT[hexstr[i].charCodeAt(0)];
+    if (count + hexdigitBitCount <= index) {
+      count += hexdigitBitCount;
+      continue;
+    }
+
+    let hexdigit = parseInt(hexstr[i], 16);
+    let nthBit = index - count;
+    // 4 bits per hexdigit
+    let result = i << 2;
+
+    // handle this hexdigit for getting exact index in the hexdigit
+    for (let j = 0; j < nthBit; j++) {
+      // unset the first nth 1s
+      hexdigit &= ~(1 << (31 - Math.clz32(hexdigit)));
+    }
+    result += Math.clz32(hexdigit) - 28;
+    return result;
+  }
+  return -1;
+}
+
 export class TetrisQuiz extends TetrisGame {
-  private initialFumen: Fumen;
+  private initialFumen: Fumen | null;
   private targetFumen: Fumen;
 
   private coverMask: string | null;
@@ -57,7 +82,7 @@ export class TetrisQuiz extends TetrisGame {
 
   constructor(
     pattern: string,
-    initialFumen: Fumen,
+    initialFumen: Fumen | null = null,
     targetFumen: Fumen,
     coverMask: string | null = null,
     fillBags: boolean = false,
@@ -75,7 +100,7 @@ export class TetrisQuiz extends TetrisGame {
 
     this.correctBuild = new Uint8Array(128).fill(0);
     this.buildLength = -1;
-    this.board.fromFumen(this.initialFumen);
+    if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
   }
 
   setInitial(fumen: Fumen) {
@@ -97,7 +122,7 @@ export class TetrisQuiz extends TetrisGame {
     super.reset(soft);
     this.pendingEvents.push('reset');
     this.answered = false;
-    this.board.fromFumen(this.initialFumen);
+    if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
     this.getValidTargets();
   }
 
@@ -105,7 +130,8 @@ export class TetrisQuiz extends TetrisGame {
     if (!this.coverMask) {
       return super.generateQueue();
     } else {
-      const index = this.random.randInt(0, countSetBits(this.coverMask));
+      const randIndex = this.random.randInt(0, countSetBits(this.coverMask));
+      const index = getNthSetBit(this.coverMask, randIndex);
       const queues = sfinderPieces(this.parsedQueuePattern as ParsedPattern);
       return queues[index];
     }
@@ -124,9 +150,11 @@ export class TetrisQuiz extends TetrisGame {
       // determine which page could be the correct setup
       const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join('') as Queue;
 
-      for (const fumen of fumens) {
-        const setFumen = setInitialFumenState(fumen, this.initialFumen);
-        const gluedFumen = glueFumen(setFumen, { order: queue, hold: 1, srs180: true }) as Fumen[];
+      for (let fumen of fumens) {
+        if (this.initialFumen !== null) {
+          fumen = setInitialFumenState(fumen, this.initialFumen);
+        }
+        const gluedFumen = glueFumen(fumen, { order: queue, hold: 1, srs180: true }) as Fumen[];
         if (gluedFumen.length > 0) {
           this.validTargetFumens.push(fumen);
           if (this.buildLength == -1) {
@@ -140,13 +168,6 @@ export class TetrisQuiz extends TetrisGame {
         }
       }
     }
-    // DEBUG
-    console.log(this.buildLength);
-    for (const piece of BAG) {
-      const index = piece.charCodeAt(0);
-      console.log(piece, this.correctBuild[index]);
-    }
-
     if (this.validTargetFumens.length == 0) {
       throw new Error(
         'Invalid parameters to quiz as no valid target answer for given queue ' + this.currentQueue
@@ -154,19 +175,6 @@ export class TetrisQuiz extends TetrisGame {
     }
     // set the answer to the first valid fumen
     this.runningTargetFumen = this.validTargetFumens[0];
-
-    // determine the pieces used for final fumen
-    // const initialBuild = new Uint8Array(128).fill(0);
-    //
-    // fumenCountPieces(this.initialFumen, initialBuild);
-    // fumenCountPieces(this.validTargetFumens[0], this.correctBuild);
-    //
-    // this.buildLength = 0;
-    // for (const piece of BAG) {
-    //   const index = piece.charCodeAt(0)
-    //   this.correctBuild[index] -= initialBuild[index];
-    //   this.buildLength += this.correctBuild[index];
-    // }
 
     this.targetsPopulated = true;
   }
@@ -218,7 +226,7 @@ export class TetrisQuiz extends TetrisGame {
       console.log('Checking Correct Pieces:', correctPieces);
 
       if (correctPieces) {
-        pages[0].field = decodeWrapper(this.initialFumen)[0].field;
+        if (this.initialFumen !== null) pages[0].field = decodeWrapper(this.initialFumen)[0].field;
         const fumen = unglueFumen(encoder.encode(pages)) as Fumen;
 
         let congruent: boolean = false;

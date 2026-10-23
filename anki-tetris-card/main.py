@@ -4,11 +4,12 @@ import json
 from . import constants
 
 card_fields = {
-  "Queue": "A queue satisfying extended sfinder notation.",
+  "Queue": "A pattern satisfying extended sfinder notation.",
   "Field": "A fumen with one page for the initial state of the board, empty implies an empty board.",
   "Goal": "A description of the goal.",
   "Answer": "A (multipage) fumen for the accepted final state(s) of the board.",
   "Refill Bags": "Continue providing pieces after queue with bags. (T/F) ",
+  "Cover Mask": "Hex string of which queues are valid, empty implies all queues are valid.",
 }
 
 config = mw.addonManager.getConfig(__name__)
@@ -18,6 +19,7 @@ parameters = {
   "initialFumen": "{{Field}}",
   "targetFumen": "{{Answer}}",
   "fillBag": "{{Refill Bags}}",
+  "coverMask": "{{Cover Mask}}",
 }
 parameters_json = json.dumps(parameters)
 
@@ -69,10 +71,14 @@ def setup_tetris_card():
       models.add_field(note_type, field)
 
     template = models.new_template("Tetris")
+
+    template["qfmt"] = setup_html()
+    template["afmt"] = "{{FrontSide}}"
     models.add_template(note_type, template)
 
     # Register it in the collection
     models.add(note_type)
+    return
 
   # Update the existing card template.
   template = note_type["tmpls"][0]

@@ -35,9 +35,9 @@ keybinds.reset(controls);
 
 const game = new TetrisQuiz(
   parameters.pattern,
-  parameters.initialFumen,
+  parameters.initialFumen ? parameters.initialFumen : null,
   parameters.targetFumen,
-  null,
+  parameters.coverMask,
   parameters.fillBag == 'T'
 );
 game.reset(false);

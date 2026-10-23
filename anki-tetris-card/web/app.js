@@ -4060,8 +4060,27 @@ ${end}`);
     }
     return count;
   }
+  function getNthSetBit(hexstr, index) {
+    let count = 0;
+    for (let i = 0; i < hexstr.length; i++) {
+      const hexdigitBitCount = HEX_TO_SET_BIT_COUNT[hexstr[i].charCodeAt(0)];
+      if (count + hexdigitBitCount <= index) {
+        count += hexdigitBitCount;
+        continue;
+      }
+      let hexdigit = parseInt(hexstr[i], 16);
+      let nthBit = index - count;
+      let result = i << 2;
+      for (let j = 0; j < nthBit; j++) {
+        hexdigit &= ~(1 << 31 - Math.clz32(hexdigit));
+      }
+      result += Math.clz32(hexdigit) - 28;
+      return result;
+    }
+    return -1;
+  }
   var TetrisQuiz = class extends TetrisGame {
-    constructor(pattern, initialFumen, targetFumen, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
+    constructor(pattern, initialFumen = null, targetFumen, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
       super(pattern, fillBags, handling);
       __publicField(this, "initialFumen");
       __publicField(this, "targetFumen");
@@ -4083,7 +4102,8 @@ ${end}`);
       this.targetsPopulated = false;
       this.correctBuild = new Uint8Array(128).fill(0);
       this.buildLength = -1;
-      this.board.fromFumen(this.initialFumen);
+      if (this.initialFumen !== null)
+        this.board.fromFumen(this.initialFumen);
     }
     setInitial(fumen) {
       this.initialFumen = fumen;
@@ -4101,14 +4121,16 @@ ${end}`);
       super.reset(soft);
       this.pendingEvents.push("reset");
       this.answered = false;
-      this.board.fromFumen(this.initialFumen);
+      if (this.initialFumen !== null)
+        this.board.fromFumen(this.initialFumen);
       this.getValidTargets();
     }
     generateQueue() {
       if (!this.coverMask) {
         return super.generateQueue();
       } else {
-        const index = this.random.randInt(0, countSetBits(this.coverMask));
+        const randIndex = this.random.randInt(0, countSetBits(this.coverMask));
+        const index = getNthSetBit(this.coverMask, randIndex);
         const queues = sfinderPieces(this.parsedQueuePattern);
         return queues[index];
       }
@@ -4121,9 +4143,11 @@ ${end}`);
       const fumens = fumenSplit(this.targetFumen);
       if (fumens.length > 0) {
         const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join("");
-        for (const fumen of fumens) {
-          const setFumen = setInitialFumenState(fumen, this.initialFumen);
-          const gluedFumen = ge(setFumen, { order: queue, hold: 1, srs180: true });
+        for (let fumen of fumens) {
+          if (this.initialFumen !== null) {
+            fumen = setInitialFumenState(fumen, this.initialFumen);
+          }
+          const gluedFumen = ge(fumen, { order: queue, hold: 1, srs180: true });
           if (gluedFumen.length > 0) {
             this.validTargetFumens.push(fumen);
             if (this.buildLength == -1) {
@@ -4136,11 +4160,6 @@ ${end}`);
             }
           }
         }
-      }
-      console.log(this.buildLength);
-      for (const piece of BAG) {
-        const index = piece.charCodeAt(0);
-        console.log(piece, this.correctBuild[index]);
       }
       if (this.validTargetFumens.length == 0) {
         throw new Error(
@@ -4186,7 +4205,8 @@ ${end}`);
         }
         console.log("Checking Correct Pieces:", correctPieces);
         if (correctPieces) {
-          pages[0].field = decodeWrapper(this.initialFumen)[0].field;
+          if (this.initialFumen !== null)
+            pages[0].field = decodeWrapper(this.initialFumen)[0].field;
           const fumen = xe(import_tetris_fumen7.encoder.encode(pages));
           let congruent = false;
           console.log("Game Fumen:", fumen);
@@ -4425,28 +4445,21 @@ ${end}`);
   var showAnswer = false;
   var controls = window.config.controls;
   var tuning = window.config.tuning;
-  keybinds.reset(controls);
   var parameters = window.parameters;
   var cardSide = window.ankiCardSide;
-  boardCanvas.width = PCSIZE * CELL_SIZE;
-  boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
-  queueCanvas.width = 4 * CELL_SIZE;
-  queueCanvas.height = 14 * CELL_SIZE;
-  holdCanvas.width = 4 * CELL_SIZE;
-  holdCanvas.height = 2 * CELL_SIZE;
   var boardCtx = boardCanvas.getContext("2d");
   var queueCtx = queueCanvas.getContext("2d");
   var holdCtx = holdCanvas.getContext("2d");
-  holdCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
-  boardCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
-  queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
+  initCanvas();
+  initContext();
   gameCtn.addEventListener("keydown", handleKeyDown);
   gameCtn.addEventListener("keyup", handleKeyUp);
+  keybinds.reset(controls);
   var game = new TetrisQuiz(
     parameters.pattern,
-    parameters.initialFumen,
+    parameters.initialFumen ? parameters.initialFumen : null,
     parameters.targetFumen,
-    null,
+    parameters.coverMask,
     parameters.fillBag == "T"
   );
   game.reset(false);
@@ -4460,7 +4473,11 @@ ${end}`);
   if (cardSide == "back") {
     showAnswer = !game.answered;
   }
-  var loop = (timestamp) => {
+  requestAnimationFrame(() => {
+    focusGame();
+  });
+  requestAnimationFrame(loop);
+  function loop(timestamp) {
     game.tick(timestamp, actions);
     const tmpActions = /* @__PURE__ */ new Set();
     if (actions.has("left")) tmpActions.add("left");
@@ -4475,11 +4492,7 @@ ${end}`);
       drawOOF(boardCtx);
     }
     requestAnimationFrame(loop);
-  };
-  requestAnimationFrame(() => {
-    focusGame();
-  });
-  requestAnimationFrame(loop);
+  }
   function focusGame() {
     gameCtn?.focus();
   }
@@ -4487,9 +4500,6 @@ ${end}`);
     if (event.code == "KeyZ" && event.ctrlKey) {
       actions.add("undo");
     } else actions.add(keybinds.lookup[event.code]);
-    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
-      event.preventDefault();
-    }
   }
   function handleKeyUp(event) {
     actions.delete(keybinds.lookup[event.code]);
@@ -4515,5 +4525,21 @@ ${end}`);
       }
     }
     game.pendingEvents = [];
+  }
+  function initCanvas() {
+    if (!boardCanvas || !queueCanvas || !holdCanvas) {
+      throw new Error("Required HTML elements are missing");
+    }
+    boardCanvas.width = PCSIZE * CELL_SIZE;
+    boardCanvas.height = BOARDHEIGHT * CELL_SIZE;
+    queueCanvas.width = 4 * CELL_SIZE;
+    queueCanvas.height = 14 * CELL_SIZE;
+    holdCanvas.width = 4 * CELL_SIZE;
+    holdCanvas.height = 2 * CELL_SIZE;
+  }
+  function initContext() {
+    holdCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
+    boardCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
+    queueCtx.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
   }
 })();
