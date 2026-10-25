@@ -37,7 +37,7 @@ const game = new TetrisQuiz(
   parameters.pattern,
   parameters.initialFumen ? parameters.initialFumen : null,
   parameters.targetFumen,
-  parameters.coverMask,
+  parameters.coverMask ? parameters.coverMask : null,
   parameters.fillBag == 'T'
 );
 game.reset(false);
