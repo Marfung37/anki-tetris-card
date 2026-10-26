@@ -90,6 +90,8 @@ export class TetrisQueue {
   }
 
   toString(): Queue {
-    return this.preview(Infinity).map(p => PieceEnum[p]).join('') as Queue;
+    return this.preview(Infinity)
+      .map((p) => PieceEnum[p])
+      .join('') as Queue;
   }
 }
