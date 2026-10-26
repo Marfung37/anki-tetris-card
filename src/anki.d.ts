@@ -9,9 +9,9 @@ interface GameConfig {
 
 interface Parameters {
   pattern: string;
-  initialFumen: Fumen;
-  targetFumen: Fumen;
-  fillBag: 'T' | 'F';
+  initialFumen: Fumen | null;
+  targetFumens: Fumen[];
+  fillBag: boolean;
   coverMask: string;
 }
 

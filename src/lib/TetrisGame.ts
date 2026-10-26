@@ -235,8 +235,6 @@ export class TetrisGame {
   }
 
   protected getNextPiece(resetted: boolean): void {
-    // DEBUG
-    console.log('Getting next piece');
     if (this.queue.length == 0) {
       if (this.holdPiece != PieceEnum._) {
         this.setActive(this.holdPiece);

@@ -3,7 +3,9 @@ import type { Fumen } from './types';
 import { PCSIZE, mirrorPieces } from './constants';
 
 function getFieldHeight(field: Field): number {
-  return field.str({ reduced: true, garbage: false }).split('\n').length;
+  const fieldStr = field.str({ reduced: true, garbage: false });
+  if (fieldStr) return fieldStr.split('\n').length;
+  return 0;
 }
 
 export function is2Line(fumen: string): boolean {

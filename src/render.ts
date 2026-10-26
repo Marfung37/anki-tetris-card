@@ -98,9 +98,6 @@ function drawPiece(
   opacity: string = ''
 ) {
   if (piece.type === PieceEnum._) return;
-  if (opacity === undefined) {
-    opacity = '';
-  }
   for (const { x, y } of piece.getMinos()) {
     context.fillStyle = get_colour(piece.type) + opacity;
     context.fillRect(x, y, 1, 1);
@@ -114,7 +111,9 @@ function drawFumen(
   board: TetrisBoard
 ) {
   const page = decodeWrapper(fumen)[0];
-  const field = page.field.str({ reduced: true, garbage: false }).split('\n').toReversed();
+  const fieldStr = page.field.str({ reduced: true, garbage: false });
+  let field: string[] = [];
+  if (fieldStr) field = fieldStr.split('\n').toReversed();
   for (let row = 0; row < field.length; row++) {
     for (let col = 0; col < PCSIZE; col++) {
       if (board.isFilled(row, col) || field[row][col] === '_') {
