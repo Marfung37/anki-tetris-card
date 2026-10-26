@@ -1,27 +1,21 @@
 from aqt import mw, gui_hooks, reviewer
 from pathlib import Path
 import json
+from html import unescape
+import re
 from . import constants
 
 card_fields = {
   "Queue": "A pattern satisfying extended sfinder notation.",
   "Field": "A fumen with one page for the initial state of the board, empty implies an empty board.",
   "Goal": "A description of the goal.",
-  "Answer": "A (multipage) fumen for the accepted final state(s) of the board.",
+  "Answer": "An newline separated list of (multipage) fumens for the accepted final state(s) of the board, each element are required steps for answer.",
   "Refill Bags": "Continue providing pieces after queue with bags. (T/F) ",
   "Cover Mask": "Hex string of which queues are valid, empty implies all queues are valid.",
 }
 
 config = mw.addonManager.getConfig(__name__)
 config_json = json.dumps(config)
-parameters = {
-  "pattern": "{{Queue}}",
-  "initialFumen": "{{Field}}",
-  "targetFumen": "{{Answer}}",
-  "fillBag": "{{Refill Bags}}",
-  "coverMask": "{{Cover Mask}}",
-}
-parameters_json = json.dumps(parameters)
 
 
 def setup_html():
@@ -39,7 +33,6 @@ def setup_html():
   config_script = f"""
   <script>
       window.config = {config_json};
-      window.parameters = {parameters_json};
   </script>
   """
 
@@ -88,21 +81,43 @@ def setup_tetris_card():
   mw.col.models.update_dict(note_type)
 
 
-def on_card_will_show(html, card, context):
+def populate_side(html, card, context):
   """Provide web interface if anki is on front or back of card"""
   if context not in ("reviewQuestion", "reviewAnswer"):
     return html
 
   side = "back" if context == "reviewAnswer" else "front"
+  script = f"""
+  <script>
+      window.ankiCardSide = "{side}";
+  </script>
+  """
 
-  return (
-    f"""
-    <script>
-        window.ankiCardSide = "{side}";
-    </script>
-    """
-    + html
+  return html.replace("<!-- ANKI CARD SIDE -->", script)
+
+
+def populate_parameters(html, card, context):
+  """Populate the window.parameters field with decoded/santized html"""
+  note = card.note()
+
+  parameters = {
+    "pattern": unescape(note["Queue"]),
+    "initialFumen": unescape(note["Field"]) or None,
+    "targetFumens": re.split(r"<br\s*/?>", unescape(note["Answer"])),
+    "fillBag": unescape(note["Refill Bags"]) == "T",
+    "coverMask": unescape(note["Cover Mask"]),
+  }
+
+  payload = json.dumps(parameters, ensure_ascii=False)
+
+  # Prevent field contents from being interpreted as HTML/script markup.
+  payload = (
+    payload.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
   )
+
+  script = f"<script>window.parameters = {payload};</script>"
+
+  return html.replace("<!-- TETRIS PARAMETERS -->", script)
 
 
 def on_js_message(handled, message, context):
@@ -118,5 +133,6 @@ def on_js_message(handled, message, context):
 
 
 gui_hooks.profile_did_open.append(setup_tetris_card)
-gui_hooks.card_will_show.append(on_card_will_show)
+gui_hooks.card_will_show.append(populate_side)
+gui_hooks.card_will_show.append(populate_parameters)
 gui_hooks.webview_did_receive_js_message.append(on_js_message)

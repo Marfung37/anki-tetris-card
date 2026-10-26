@@ -35,10 +35,10 @@ keybinds.reset(controls);
 
 const game = new TetrisQuiz(
   parameters.pattern,
-  parameters.initialFumen ? parameters.initialFumen : null,
-  parameters.targetFumen,
+  parameters.initialFumen,
+  parameters.targetFumens,
   parameters.coverMask ? parameters.coverMask : null,
-  parameters.fillBag == 'T'
+  parameters.fillBag
 );
 game.reset(false);
 game.loadHandling(tuning);
@@ -110,8 +110,6 @@ function handleEvents() {
         }
         break;
       case 'wrong':
-        break;
-      case 'missing setup':
         break;
     }
   }

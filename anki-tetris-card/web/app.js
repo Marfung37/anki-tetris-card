@@ -2209,9 +2209,9 @@
         this.queue[this.pos] = piece;
       }
     }
-    preview() {
+    preview(max = -1) {
       return Array.from(
-        { length: Math.min(this.length, this.previewSize) },
+        { length: Math.min(this.length, Math.max(this.previewSize, max)) },
         (_, i) => this.queue[(this.pos + i) % this.queue.length]
       );
     }
@@ -2225,6 +2225,9 @@
     }
     setFillBags(value) {
       this.fillBags = value;
+    }
+    toString() {
+      return this.preview(Infinity).map((p) => PieceEnum[p]).join("");
     }
   };
 
@@ -2241,7 +2244,9 @@
 
   // src/lib/fumenUtils.ts
   function getFieldHeight(field) {
-    return field.str({ reduced: true, garbage: false }).split("\n").length;
+    const fieldStr = field.str({ reduced: true, garbage: false });
+    if (fieldStr) return fieldStr.split("\n").length;
+    return 0;
   }
   function decodeWrapper(fumen) {
     let pages;
@@ -3363,21 +3368,22 @@ ${end}`);
       return this.board.place(this.active, clear);
     }
     getNextPiece(resetted) {
-      console.log("Getting next piece");
       if (this.queue.length == 0) {
         if (this.holdPiece != 0 /* _ */) {
           this.setActive(this.holdPiece);
           this.holdPiece = 0 /* _ */;
         } else {
-          this.reset(this.softReset);
+          return false;
         }
       } else if (!resetted) {
         this.setActive(this.queue.poll());
       }
+      return true;
     }
     lock(piece = null) {
       this.harddrop(piece);
-      this.getNextPiece(false);
+      if (!this.getNextPiece(false))
+        this.reset(this.softReset);
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -4080,37 +4086,41 @@ ${end}`);
     return -1;
   }
   var TetrisQuiz = class extends TetrisGame {
-    constructor(pattern, initialFumen = null, targetFumen, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
+    constructor(pattern, initialFumen = null, targetFumens, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
       super(pattern, fillBags, handling);
       __publicField(this, "initialFumen");
-      __publicField(this, "targetFumen");
+      __publicField(this, "targetFumens");
       __publicField(this, "coverMask");
       __publicField(this, "validTargetFumens");
       __publicField(this, "answered");
       // fumen for the answer that matches line clears from user
       __publicField(this, "runningTargetFumen");
+      // index of target fumen currently being used
+      __publicField(this, "currentTargetIndex");
       // frequency map of pieces in target fumen
       __publicField(this, "correctBuild");
       __publicField(this, "buildLength");
       __publicField(this, "targetsPopulated");
+      __publicField(this, "pendingEvents");
       this.initialFumen = initialFumen;
-      this.targetFumen = targetFumen;
+      this.targetFumens = targetFumens;
       this.coverMask = coverMask;
       this.validTargetFumens = [];
       this.runningTargetFumen = null;
       this.answered = false;
+      this.currentTargetIndex = 0;
       this.targetsPopulated = false;
+      this.pendingEvents = [];
       this.correctBuild = new Uint8Array(128).fill(0);
       this.buildLength = -1;
-      if (this.initialFumen !== null)
-        this.board.fromFumen(this.initialFumen);
+      if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
     }
     setInitial(fumen) {
       this.initialFumen = fumen;
       this.fullReset();
     }
-    setTarget(fumen) {
-      this.targetFumen = fumen;
+    setTarget(fumens) {
+      this.targetFumens = fumens;
       this.fullReset();
     }
     setCoverMask(mask) {
@@ -4121,9 +4131,9 @@ ${end}`);
       super.reset(soft);
       this.pendingEvents.push("reset");
       this.answered = false;
-      if (this.initialFumen !== null)
-        this.board.fromFumen(this.initialFumen);
-      this.getValidTargets();
+      this.currentTargetIndex = 0;
+      if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
+      this.getNextTarget();
     }
     generateQueue() {
       if (!this.coverMask) {
@@ -4135,14 +4145,14 @@ ${end}`);
         return queues[index];
       }
     }
-    // targetFumen can contain multiple accepted final board states, find which ones are covered
-    getValidTargets() {
+    // targetFumens[index] can contain multiple accepted final board states, find which ones are covered
+    getNextTarget() {
       this.validTargetFumens = [];
       this.correctBuild.fill(0);
       this.buildLength = -1;
-      const fumens = fumenSplit(this.targetFumen);
+      const fumens = fumenSplit(this.targetFumens[this.currentTargetIndex]);
       if (fumens.length > 0) {
-        const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join("");
+        const queue = this.currentQueue;
         for (let fumen of fumens) {
           if (this.initialFumen !== null) {
             fumen = setInitialFumenState(fumen, this.initialFumen);
@@ -4174,9 +4184,10 @@ ${end}`);
         throw new Error("Expected reset() to be run after initializing TetrisQuiz object");
       }
       const lineclears = this.harddrop(piece, true);
-      if (lineclears.length > 0) {
+      if (this.runningTargetFumen !== null && lineclears.length > 0) {
         this.runningTargetFumen = fumenClearLines(this.runningTargetFumen, lineclears);
       }
+      const outOfPieces = !this.getNextPiece(false);
       if (this.pieceCount == this.buildLength) {
         const pages = [];
         const currentBuild = new Uint8Array(128).fill(0);
@@ -4205,8 +4216,7 @@ ${end}`);
         }
         console.log("Checking Correct Pieces:", correctPieces);
         if (correctPieces) {
-          if (this.initialFumen !== null)
-            pages[0].field = decodeWrapper(this.initialFumen)[0].field;
+          if (this.initialFumen !== null) pages[0].field = decodeWrapper(this.initialFumen)[0].field;
           const fumen = xe(import_tetris_fumen7.encoder.encode(pages));
           let congruent = false;
           console.log("Game Fumen:", fumen);
@@ -4215,13 +4225,22 @@ ${end}`);
             congruent || (congruent = fumen == validFumen);
           }
           console.log("Checking Congruent Boards:", congruent);
-          this.answered = congruent;
-          const event = congruent ? "correct" : "wrong";
-          if (!this.simulating) this.pendingEvents.push(event);
+          if (congruent) {
+            this.currentTargetIndex++;
+            if (this.currentTargetIndex < this.targetFumens.length) {
+              this.getNextTarget();
+              if (!this.simulating) this.pendingEvents.push("next");
+            } else if (this.currentTargetIndex == this.targetFumens.length) {
+              this.answered = congruent;
+              this.runningTargetFumen = null;
+              if (!this.simulating) this.pendingEvents.push("correct");
+            }
+          }
         }
       }
-      this.getNextPiece(false);
-      console.log("Got next piece");
+      if (outOfPieces) {
+        this.reset(this.softReset);
+      }
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -4230,7 +4249,7 @@ ${end}`);
       return {
         parsedQueuePattern: this.parsedQueuePattern,
         initialFumen: this.initialFumen,
-        targetFumen: this.targetFumen,
+        targetFumens: this.targetFumens,
         coverMask: this.coverMask,
         fillBags: this.fillBags,
         operations: this.operations,
@@ -4240,7 +4259,7 @@ ${end}`);
     restore(state) {
       this.parsedQueuePattern = state.parsedQueuePattern;
       this.initialFumen = state.initialFumen;
-      this.targetFumen = state.targetFumen;
+      this.targetFumens = state.targetFumens;
       this.coverMask = state.coverMask;
       this.fillBags = state.fillBags;
       this.operations = state.operations;
@@ -4399,9 +4418,6 @@ ${end}`);
   }
   function drawPiece(context, piece, opacity = "") {
     if (piece.type === 0 /* _ */) return;
-    if (opacity === void 0) {
-      opacity = "";
-    }
     for (const { x, y } of piece.getMinos()) {
       context.fillStyle = get_colour(piece.type) + opacity;
       context.fillRect(x, y, 1, 1);
@@ -4409,7 +4425,9 @@ ${end}`);
   }
   function drawFumen(context, fumen, opacity = "", board) {
     const page = decodeWrapper(fumen)[0];
-    const field = page.field.str({ reduced: true, garbage: false }).split("\n").toReversed();
+    const fieldStr = page.field.str({ reduced: true, garbage: false });
+    let field = [];
+    if (fieldStr) field = fieldStr.split("\n").toReversed();
     for (let row = 0; row < field.length; row++) {
       for (let col = 0; col < PCSIZE; col++) {
         if (board.isFilled(row, col) || field[row][col] === "_") {
@@ -4457,10 +4475,10 @@ ${end}`);
   keybinds.reset(controls);
   var game = new TetrisQuiz(
     parameters.pattern,
-    parameters.initialFumen ? parameters.initialFumen : null,
-    parameters.targetFumen,
-    parameters.coverMask,
-    parameters.fillBag == "T"
+    parameters.initialFumen,
+    parameters.targetFumens,
+    parameters.coverMask ? parameters.coverMask : null,
+    parameters.fillBag
   );
   game.reset(false);
   game.loadHandling(tuning);
@@ -4519,8 +4537,6 @@ ${end}`);
           }
           break;
         case "wrong":
-          break;
-        case "missing setup":
           break;
       }
     }
