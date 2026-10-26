@@ -111,8 +111,6 @@ function handleEvents() {
         break;
       case 'wrong':
         break;
-      case 'missing setup':
-        break;
     }
   }
   game.pendingEvents = [];

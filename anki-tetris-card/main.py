@@ -2,6 +2,7 @@ from aqt import mw, gui_hooks, reviewer
 from pathlib import Path
 import json
 from html import unescape
+import re
 from . import constants
 
 card_fields = {
@@ -102,7 +103,7 @@ def populate_parameters(html, card, context):
   parameters = {
     "pattern": unescape(note["Queue"]),
     "initialFumen": unescape(note["Field"]) or None,
-    "targetFumens": unescape(note["Answer"]).splitlines(),
+    "targetFumens": re.split(r"<br\s*/?>", unescape(note["Answer"])),
     "fillBag": unescape(note["Refill Bags"]) == "T",
     "coverMask": unescape(note["Cover Mask"]),
   }

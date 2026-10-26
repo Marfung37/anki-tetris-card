@@ -1,4 +1,4 @@
-import { TetrisGame, DEFAULT_TUNING } from './TetrisGame';
+import { TetrisGame, DEFAULT_TUNING, type Event } from './TetrisGame';
 import { type ParsedPattern, sfinderPieces } from './pieces';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { decodeWrapper, fumenSplit, fumenClearLines, setInitialFumenState } from './fumenUtils';
@@ -63,6 +63,8 @@ function getNthSetBit(hexstr: string, index: number): number {
   return -1;
 }
 
+export type QuizEvent = 'correct' | 'wrong' | 'next' | Event;
+
 export class TetrisQuiz extends TetrisGame {
   private initialFumen: Fumen | null;
   private targetFumens: Fumen[];
@@ -76,12 +78,14 @@ export class TetrisQuiz extends TetrisGame {
   runningTargetFumen: Fumen | null;
 
   // index of target fumen currently being used
-  private currentTargetIndex: number;
+  currentTargetIndex: number;
 
   // frequency map of pieces in target fumen
   private correctBuild: Uint8Array;
   private buildLength: number;
   private targetsPopulated: boolean;
+
+  pendingEvents: QuizEvent[];
 
   constructor(
     pattern: string,
@@ -101,6 +105,8 @@ export class TetrisQuiz extends TetrisGame {
     this.currentTargetIndex = 0;
 
     this.targetsPopulated = false;
+
+    this.pendingEvents = [];
 
     this.correctBuild = new Uint8Array(128).fill(0);
     this.buildLength = -1;
@@ -128,7 +134,7 @@ export class TetrisQuiz extends TetrisGame {
     this.answered = false;
     this.currentTargetIndex = 0;
     if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
-    this.getNextTarget(this.initialFumen);
+    this.getNextTarget();
   }
 
   protected generateQueue() {
@@ -143,7 +149,7 @@ export class TetrisQuiz extends TetrisGame {
   }
 
   // targetFumens[index] can contain multiple accepted final board states, find which ones are covered
-  private getNextTarget(initialFumen: Fumen | null) {
+  private getNextTarget() {
     // clear from last time this is ran
     this.validTargetFumens = [];
     this.correctBuild.fill(0);
@@ -153,11 +159,13 @@ export class TetrisQuiz extends TetrisGame {
 
     if (fumens.length > 0) {
       // determine which page could be the correct setup
-      const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join('') as Queue;
+
+      // get queue set in card
+      const queue = this.currentQueue as Queue;
 
       for (let fumen of fumens) {
-        if (initialFumen !== null) {
-          fumen = setInitialFumenState(fumen, initialFumen);
+        if (this.initialFumen !== null) {
+          fumen = setInitialFumenState(fumen, this.initialFumen);
         }
         const gluedFumen = glueFumen(fumen, { order: queue, hold: 1, srs180: true }) as Fumen[];
         if (gluedFumen.length > 0) {
@@ -195,6 +203,8 @@ export class TetrisQuiz extends TetrisGame {
     if (this.runningTargetFumen !== null && lineclears.length > 0) {
       this.runningTargetFumen = fumenClearLines(this.runningTargetFumen as Fumen, lineclears);
     }
+
+    const outOfPieces = !this.getNextPiece(false);
 
     if (this.pieceCount == this.buildLength) {
       const pages = [];
@@ -245,20 +255,24 @@ export class TetrisQuiz extends TetrisGame {
         console.log('Checking Congruent Boards:', congruent);
 
         // go to next target
-        if (congruent) this.currentTargetIndex++;
-        if (this.currentTargetIndex < this.targetFumens.length) {
-          this.getNextTarget(fumen);
-          if (!this.simulating) this.pendingEvents.push('next');
-        } else if (this.currentTargetIndex == this.targetFumens.length) {
-          // completed all steps in answer
-          this.answered = congruent;
-          this.runningTargetFumen = null;
-          if (!this.simulating) this.pendingEvents.push('correct');
+        if (congruent) {
+          this.currentTargetIndex++;
+          if (this.currentTargetIndex < this.targetFumens.length) {
+            this.getNextTarget();
+            if (!this.simulating) this.pendingEvents.push('next');
+          } else if (this.currentTargetIndex == this.targetFumens.length) {
+            // completed all steps in answer
+            this.answered = congruent;
+            this.runningTargetFumen = null;
+            if (!this.simulating) this.pendingEvents.push('correct');
+          }
         }
       }
     }
 
-    this.getNextPiece(false);
+    if (outOfPieces) {
+      this.reset(this.softReset);
+    }
 
     // topped out
     if (this.checkCollide(this.active)) {

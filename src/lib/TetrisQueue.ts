@@ -1,6 +1,6 @@
 import { PRNG } from './random';
 import type { Queue, Piece } from './types';
-import { type PieceEnum, get_piece_number } from './pieceData';
+import { PieceEnum, get_piece_number } from './pieceData';
 
 // Tetris 7 bag queue generation
 const BAGSIZE = 7;
@@ -69,9 +69,9 @@ export class TetrisQueue {
     }
   }
 
-  preview(): PieceEnum[] {
+  preview(max: number = -1): PieceEnum[] {
     return Array.from(
-      { length: Math.min(this.length, this.previewSize) },
+      { length: Math.min(this.length, Math.max(this.previewSize, max)) },
       (_, i) => this.queue[(this.pos + i) % this.queue.length]
     );
   }
@@ -87,5 +87,9 @@ export class TetrisQueue {
 
   setFillBags(value: boolean): void {
     this.fillBags = value;
+  }
+
+  toString(): Queue {
+    return this.preview(Infinity).map(p => PieceEnum[p]).join('') as Queue;
   }
 }

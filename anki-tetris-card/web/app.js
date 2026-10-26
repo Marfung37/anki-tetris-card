@@ -2209,9 +2209,9 @@
         this.queue[this.pos] = piece;
       }
     }
-    preview() {
+    preview(max = -1) {
       return Array.from(
-        { length: Math.min(this.length, this.previewSize) },
+        { length: Math.min(this.length, Math.max(this.previewSize, max)) },
         (_, i) => this.queue[(this.pos + i) % this.queue.length]
       );
     }
@@ -2225,6 +2225,9 @@
     }
     setFillBags(value) {
       this.fillBags = value;
+    }
+    toString() {
+      return this.preview(Infinity).map((p) => PieceEnum[p]).join("");
     }
   };
 
@@ -2242,8 +2245,7 @@
   // src/lib/fumenUtils.ts
   function getFieldHeight(field) {
     const fieldStr = field.str({ reduced: true, garbage: false });
-    if (fieldStr)
-      return fieldStr.split("\n").length;
+    if (fieldStr) return fieldStr.split("\n").length;
     return 0;
   }
   function decodeWrapper(fumen) {
@@ -3371,15 +3373,17 @@ ${end}`);
           this.setActive(this.holdPiece);
           this.holdPiece = 0 /* _ */;
         } else {
-          this.reset(this.softReset);
+          return false;
         }
       } else if (!resetted) {
         this.setActive(this.queue.poll());
       }
+      return true;
     }
     lock(piece = null) {
       this.harddrop(piece);
-      this.getNextPiece(false);
+      if (!this.getNextPiece(false))
+        this.reset(this.softReset);
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -4097,6 +4101,7 @@ ${end}`);
       __publicField(this, "correctBuild");
       __publicField(this, "buildLength");
       __publicField(this, "targetsPopulated");
+      __publicField(this, "pendingEvents");
       this.initialFumen = initialFumen;
       this.targetFumens = targetFumens;
       this.coverMask = coverMask;
@@ -4105,6 +4110,7 @@ ${end}`);
       this.answered = false;
       this.currentTargetIndex = 0;
       this.targetsPopulated = false;
+      this.pendingEvents = [];
       this.correctBuild = new Uint8Array(128).fill(0);
       this.buildLength = -1;
       if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
@@ -4127,7 +4133,7 @@ ${end}`);
       this.answered = false;
       this.currentTargetIndex = 0;
       if (this.initialFumen !== null) this.board.fromFumen(this.initialFumen);
-      this.getNextTarget(this.initialFumen);
+      this.getNextTarget();
     }
     generateQueue() {
       if (!this.coverMask) {
@@ -4140,16 +4146,16 @@ ${end}`);
       }
     }
     // targetFumens[index] can contain multiple accepted final board states, find which ones are covered
-    getNextTarget(initialFumen) {
+    getNextTarget() {
       this.validTargetFumens = [];
       this.correctBuild.fill(0);
       this.buildLength = -1;
       const fumens = fumenSplit(this.targetFumens[this.currentTargetIndex]);
       if (fumens.length > 0) {
-        const queue = this.queue.queue.map((piece) => PieceEnum[piece]).join("");
+        const queue = this.currentQueue;
         for (let fumen of fumens) {
-          if (initialFumen !== null) {
-            fumen = setInitialFumenState(fumen, initialFumen);
+          if (this.initialFumen !== null) {
+            fumen = setInitialFumenState(fumen, this.initialFumen);
           }
           const gluedFumen = ge(fumen, { order: queue, hold: 1, srs180: true });
           if (gluedFumen.length > 0) {
@@ -4181,6 +4187,7 @@ ${end}`);
       if (this.runningTargetFumen !== null && lineclears.length > 0) {
         this.runningTargetFumen = fumenClearLines(this.runningTargetFumen, lineclears);
       }
+      const outOfPieces = !this.getNextPiece(false);
       if (this.pieceCount == this.buildLength) {
         const pages = [];
         const currentBuild = new Uint8Array(128).fill(0);
@@ -4218,18 +4225,22 @@ ${end}`);
             congruent || (congruent = fumen == validFumen);
           }
           console.log("Checking Congruent Boards:", congruent);
-          const event = congruent ? "correct" : "wrong";
-          if (congruent) this.currentTargetIndex++;
-          if (this.currentTargetIndex < this.targetFumens.length) {
-            this.getNextTarget(fumen);
-          } else if (this.currentTargetIndex == this.targetFumens.length) {
-            this.answered = congruent;
-            this.runningTargetFumen = null;
+          if (congruent) {
+            this.currentTargetIndex++;
+            if (this.currentTargetIndex < this.targetFumens.length) {
+              this.getNextTarget();
+              if (!this.simulating) this.pendingEvents.push("next");
+            } else if (this.currentTargetIndex == this.targetFumens.length) {
+              this.answered = congruent;
+              this.runningTargetFumen = null;
+              if (!this.simulating) this.pendingEvents.push("correct");
+            }
           }
-          if (!this.simulating) this.pendingEvents.push(event);
         }
       }
-      this.getNextPiece(false);
+      if (outOfPieces) {
+        this.reset(this.softReset);
+      }
       if (this.checkCollide(this.active)) {
         this.reset(this.softReset);
       }
@@ -4416,8 +4427,7 @@ ${end}`);
     const page = decodeWrapper(fumen)[0];
     const fieldStr = page.field.str({ reduced: true, garbage: false });
     let field = [];
-    if (fieldStr)
-      field = fieldStr.split("\n").toReversed();
+    if (fieldStr) field = fieldStr.split("\n").toReversed();
     for (let row = 0; row < field.length; row++) {
       for (let col = 0; col < PCSIZE; col++) {
         if (board.isFilled(row, col) || field[row][col] === "_") {
@@ -4527,8 +4537,6 @@ ${end}`);
           }
           break;
         case "wrong":
-          break;
-        case "missing setup":
           break;
       }
     }

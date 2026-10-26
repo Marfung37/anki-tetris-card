@@ -234,23 +234,25 @@ export class TetrisGame {
     return this.board.place(this.active, clear);
   }
 
-  protected getNextPiece(resetted: boolean): void {
+  protected getNextPiece(resetted: boolean): boolean {
     if (this.queue.length == 0) {
       if (this.holdPiece != PieceEnum._) {
         this.setActive(this.holdPiece);
         this.holdPiece = PieceEnum._;
       } else {
-        // no more pieces
-        this.reset(this.softReset);
+        return false;
       }
     } else if (!resetted) {
       this.setActive(this.queue.poll());
     }
+    return true;
   }
 
   lock(piece: TetrisBoardPiece | null = null): void {
     this.harddrop(piece);
-    this.getNextPiece(false);
+    if (!this.getNextPiece(false))
+      // no more pieces
+      this.reset(this.softReset);
 
     // topped out
     if (this.checkCollide(this.active)) {
