@@ -5,7 +5,13 @@ for reviewing setups such as openers or PC setups.
 
 ## Usage
 
-TBA
+TBA for installation
+
+Controls can be set through config file with add-ons found in
+Tools -> Add-ons -> anki-tetris-card
+
+Controls are likely to conflict with anki's shortcuts, which I recommend
+installing an add-on to set anki's shortcuts such as [Customize Keyboard Shortcuts](https://ankiweb.net/shared/info/1762336370).
 
 ## Fields
 
