@@ -1,9 +1,12 @@
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: ['src/index.ts'],
+  entryPoints: {
+    app: "src/app.ts",
+    settings: "src/settings.ts"
+  },
   bundle: true,
   platform: 'browser',
   target: 'es2020',
-  outfile: 'anki-tetris-card/web/app.js'
+  outdir: 'anki-tetris-card/web'
 });

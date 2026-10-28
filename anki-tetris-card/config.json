@@ -10,7 +10,7 @@
     "hd": "ArrowUp",
     "d1": "KeyD",
     "reset": "KeyR",
-    "undo": "Ctrl+Z"
+    "undo": "Ctrl+KeyZ"
   },
   "tuning": {
     "arr": 0,

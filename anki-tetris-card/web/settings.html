@@ -1,0 +1,45 @@
+<head>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="flex h-7/8 w-auto flex-col justify-evenly rounded px-6 py-2 bg-base-100">
+    <div>
+      <h3 class="py-2 text-lg font-bold">Keybinds</h3>
+      <table>
+        <tbody id="controls">
+          <template id="control-template">
+            <tr>
+              <td class="control-name px-2">{action}</td>
+              <td>
+                <input
+                  class="control-key text-sm caret-transparent disabled:cursor-not-allowed bg-base-300 disabled:bg-neutral/50 disabled:text-neutral-content"
+                  readonly
+                />
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3 class="py-2 text-lg font-bold">Tunings</h3>
+      <table>
+        <tbody id="tuning">
+          <template id="tuning-template">
+            <tr>
+              <td class="tuning-name"></td>
+              <td>
+                <input
+                  class="tuning-input text-sm bg-base-300"
+                  type="number"
+                />
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="settings.js"></script>
+</body>

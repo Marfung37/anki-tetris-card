@@ -4451,7 +4451,7 @@ ${end}`);
     context.setTransform(transform);
   }
 
-  // src/index.ts
+  // src/app.ts
   var gameCtn = document.querySelector("#game-container");
   var boardCanvas = document.querySelector("#board");
   var queueCanvas = document.querySelector("#queue");
@@ -4481,6 +4481,7 @@ ${end}`);
     parameters.fillBag
   );
   game.reset(false);
+  console.log(JSON.stringify(tuning));
   game.loadHandling(tuning);
   var saved = sessionStorage.getItem("tetris-state");
   if (saved) {

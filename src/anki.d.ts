@@ -20,7 +20,8 @@ declare global {
     config: GameConfig;
     parameters: Parameters;
     ankiCardSide: 'front' | 'back';
+    initializeSettings: (config: Config) => void;
   }
 
-  function pycmd(command: string): void;
+  function pycmd(command: string, callback?: (result: Object) => void): void;
 }

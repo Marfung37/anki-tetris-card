@@ -8,6 +8,7 @@ const boardCanvas = document.querySelector<HTMLCanvasElement>('#board');
 const queueCanvas = document.querySelector<HTMLCanvasElement>('#queue');
 const holdCanvas = document.querySelector<HTMLCanvasElement>('#hold');
 
+// type guard
 if (!gameCtn || !boardCanvas || !queueCanvas || !holdCanvas) {
   throw new Error('Required HTML elements are missing');
 }
@@ -41,6 +42,8 @@ const game = new TetrisQuiz(
   parameters.fillBag
 );
 game.reset(false);
+// DEBUG
+console.log(JSON.stringify(tuning))
 game.loadHandling(tuning);
 
 const saved = sessionStorage.getItem('tetris-state');
