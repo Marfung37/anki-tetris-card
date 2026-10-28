@@ -4298,7 +4298,7 @@ ${end}`);
     hd: "Space",
     d1: "KeyH",
     reset: "KeyR",
-    undo: "Ctrl+Z"
+    undo: "Ctrl+KeyZ"
   };
   var Keybind = class {
     constructor(binding) {
@@ -4316,7 +4316,6 @@ ${end}`);
       }
     }
     set(action, key) {
-      if (action == "undo") return;
       const dupAction = Object.keys(this.binding).find(
         (k2) => this.binding[k2] === key
       );
@@ -4481,7 +4480,6 @@ ${end}`);
     parameters.fillBag
   );
   game.reset(false);
-  console.log(JSON.stringify(tuning));
   game.loadHandling(tuning);
   var saved = sessionStorage.getItem("tetris-state");
   if (saved) {
@@ -4516,9 +4514,11 @@ ${end}`);
     gameCtn?.focus();
   }
   function handleKeyDown(event) {
-    if (event.code == "KeyZ" && event.ctrlKey) {
-      actions.add("undo");
-    } else actions.add(keybinds.lookup[event.code]);
+    let code = event.code;
+    if (event.shiftKey && !event.code.startsWith("Shift")) code = "Shift+" + code;
+    if (event.altKey && !event.code.startsWith("Alt")) code = "Alt+" + code;
+    if (event.ctrlKey && !event.code.startsWith("Control")) code = "Ctrl+" + code;
+    actions.add(keybinds.lookup[code]);
   }
   function handleKeyUp(event) {
     actions.delete(keybinds.lookup[event.code]);

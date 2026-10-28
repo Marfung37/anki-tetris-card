@@ -42,8 +42,6 @@ const game = new TetrisQuiz(
   parameters.fillBag
 );
 game.reset(false);
-// DEBUG
-console.log(JSON.stringify(tuning));
 game.loadHandling(tuning);
 
 const saved = sessionStorage.getItem('tetris-state');
@@ -88,9 +86,13 @@ function focusGame(): void {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.code == 'KeyZ' && event.ctrlKey) {
-    actions.add('undo');
-  } else actions.add(keybinds.lookup[event.code]);
+  // construct code
+  let code = event.code
+  if (event.shiftKey && !event.code.startsWith("Shift")) code = "Shift+" + code;
+  if (event.altKey && !event.code.startsWith("Alt")) code = "Alt+" + code;
+  if (event.ctrlKey && !event.code.startsWith("Control")) code = "Ctrl+" + code;
+
+  actions.add(keybinds.lookup[code]);
 }
 
 function handleKeyUp(event: KeyboardEvent) {

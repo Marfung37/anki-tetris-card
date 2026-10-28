@@ -21,14 +21,23 @@ window.initializeSettings = function (config: Config) {
     const input = row.querySelector('.control-key') as HTMLInputElement;
 
     name.textContent = control;
-    input.value = key as string;
-    input.disabled = control === 'undo';
+    input.value = key;
 
     input.addEventListener('keydown', (event) => {
       event.preventDefault();
 
-      pycmd(`save-config:controls-${control}-${event.code}`);
-      input.value = event.code;
+      let code = event.code;
+      if (event.shiftKey && !event.code.startsWith("Shift")) code = "Shift+" + code;
+      if (event.altKey && !event.code.startsWith("Alt")) code = "Alt+" + code;
+      if (event.ctrlKey && !event.code.startsWith("Control")) code = "Ctrl+" + code;
+
+      if (code == "Backspace") {
+        code = "<nop>"
+      }
+
+      pycmd(`save-config:controls-${control}-${code}`);
+
+      input.value = code;
     });
 
     controlList.appendChild(row);

@@ -14,7 +14,7 @@ const DEFAULT: Bindings = {
   hd: 'Space',
   d1: 'KeyH',
   reset: 'KeyR',
-  undo: 'Ctrl+Z'
+  undo: 'Ctrl+KeyZ'
 };
 
 export class Keybind {
@@ -36,7 +36,6 @@ export class Keybind {
   }
 
   set(action: Action, key: string): void {
-    if (action == 'undo') return;
     // unset if key already in use
     const dupAction = Object.keys(this.binding).find(
       (k) => this.binding[k as Action] === key
