@@ -1,4 +1,2 @@
 @import 'tailwindcss';
-@source "../anki-tetris-card/web/index.html";
-@source "../anki-tetris-card/web/back.html";
-@source "../anki-tetris-card/web/settings.html";
+@source "../anki-tetris-card/web";

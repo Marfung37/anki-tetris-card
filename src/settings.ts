@@ -27,12 +27,12 @@ window.initializeSettings = function (config: Config) {
       event.preventDefault();
 
       let code = event.code;
-      if (event.shiftKey && !event.code.startsWith("Shift")) code = "Shift+" + code;
-      if (event.altKey && !event.code.startsWith("Alt")) code = "Alt+" + code;
-      if (event.ctrlKey && !event.code.startsWith("Control")) code = "Ctrl+" + code;
+      if (event.shiftKey && !event.code.startsWith('Shift')) code = 'Shift+' + code;
+      if (event.altKey && !event.code.startsWith('Alt')) code = 'Alt+' + code;
+      if (event.ctrlKey && !event.code.startsWith('Control')) code = 'Ctrl+' + code;
 
-      if (code == "Backspace") {
-        code = "<nop>"
+      if (code == 'Backspace') {
+        code = '<nop>';
       }
 
       pycmd(`save-config:controls-${control}-${code}`);

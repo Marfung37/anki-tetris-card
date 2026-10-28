@@ -4,6 +4,7 @@ import tseslint from 'typescript-eslint';
 import json from '@eslint/json';
 import markdown from '@eslint/markdown';
 import css from '@eslint/css';
+import { tailwind4 } from 'tailwind-csstree';
 import { defineConfig } from 'eslint/config';
 import { includeIgnoreFile } from '@eslint/compat';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +21,7 @@ export default defineConfig([
       // Ignore generated files
       'anki-tetris-card/web/app.js',
       'anki-tetris-card/web/style.css',
-      'anki-tetris-card/web/settings.js',
+      'anki-tetris-card/web/settings.js'
     ]
   },
   includeIgnoreFile(rootGitignorePath),
@@ -41,6 +42,17 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_'
         }
       ]
+    }
+  },
+  {
+    files: ['**/*.css'],
+    plugins: { css },
+    language: 'css/css',
+    languageOptions: {
+      customSyntax: tailwind4
+    },
+    rules: {
+      'css/no-invalid-at-rules': 'error'
     }
   },
   {

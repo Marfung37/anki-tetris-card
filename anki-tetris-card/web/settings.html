@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="bg-gray-100 flex h-7/8 w-auto flex-col justify-evenly rounded px-6 py-2">
+  <div class="flex h-7/8 w-auto flex-col justify-evenly rounded bg-gray-100 px-6 py-2">
     <div>
       <h3 class="py-2 text-lg font-bold">Keybinds</h3>
       <table>
@@ -12,7 +12,7 @@
               <td class="control-name px-2">{action}</td>
               <td>
                 <input
-                  class="control-key bg-gray-300 disabled:bg-neutral/50 disabled:text-neutral-content text-sm caret-transparent disabled:cursor-not-allowed"
+                  class="control-key disabled:bg-neutral/50 disabled:text-neutral-content bg-gray-300 text-sm caret-transparent disabled:cursor-not-allowed"
                   readonly
                 />
               </td>
@@ -41,7 +41,15 @@
     <div>
       <h3 class="py-2 text-lg font-bold">Info</h3>
       <p>Changes applied on initialization of a board, so exit from a card and go back.</p>
-      <p>To modify anki's shortcuts use <a class="text-blue-600 visited:text-purple-600" href="https://ankiweb.net/shared/info/1762336370">Customize Keyboard Shortcuts</a> addon.</p>
+      <p>
+        To modify anki's shortcuts use
+        <a
+          class="text-blue-600 visited:text-purple-600"
+          href="https://ankiweb.net/shared/info/1762336370"
+          >Customize Keyboard Shortcuts</a
+        >
+        addon.
+      </p>
       <p>Common conflicts:</p>
       <ul class="list-disc pl-6">
         <li><code>Space</code> is anki's shortcut for See Answer and marking card Good</li>

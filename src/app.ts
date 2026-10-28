@@ -87,10 +87,10 @@ function focusGame(): void {
 
 function handleKeyDown(event: KeyboardEvent) {
   // construct code
-  let code = event.code
-  if (event.shiftKey && !event.code.startsWith("Shift")) code = "Shift+" + code;
-  if (event.altKey && !event.code.startsWith("Alt")) code = "Alt+" + code;
-  if (event.ctrlKey && !event.code.startsWith("Control")) code = "Ctrl+" + code;
+  let code = event.code;
+  if (event.shiftKey && !event.code.startsWith('Shift')) code = 'Shift+' + code;
+  if (event.altKey && !event.code.startsWith('Alt')) code = 'Alt+' + code;
+  if (event.ctrlKey && !event.code.startsWith('Control')) code = 'Ctrl+' + code;
 
   actions.add(keybinds.lookup[code]);
 }
