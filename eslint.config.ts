@@ -19,7 +19,8 @@ export default defineConfig([
       'yarn.lock',
       // Ignore generated files
       'anki-tetris-card/web/app.js',
-      'anki-tetris-card/web/style.css'
+      'anki-tetris-card/web/style.css',
+      'anki-tetris-card/web/settings.js',
     ]
   },
   includeIgnoreFile(rootGitignorePath),

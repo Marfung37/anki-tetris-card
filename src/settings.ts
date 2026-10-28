@@ -1,4 +1,3 @@
-
 const controlList = document.querySelector<HTMLTableSectionElement>('#controls');
 const tuningList = document.querySelector<HTMLTableSectionElement>('#tuning');
 const controlTemplate = document.querySelector<HTMLTemplateElement>('#control-template');
@@ -16,44 +15,43 @@ interface Config {
 
 window.initializeSettings = function (config: Config) {
   for (const [control, key] of Object.entries(config.controls)) {
-    const row = document.importNode(controlTemplate.content, true)
+    const row = document.importNode(controlTemplate.content, true);
 
-    const name = row.querySelector(".control-name") as HTMLTableCellElement;
-    const input = row.querySelector(".control-key") as HTMLInputElement;
+    const name = row.querySelector('.control-name') as HTMLTableCellElement;
+    const input = row.querySelector('.control-key') as HTMLInputElement;
 
     name.textContent = control;
     input.value = key as string;
     input.disabled = control === 'undo';
 
-    input.addEventListener("keydown", (event) => {
-      console.log("Editing:", control);
-      pycmd(`save-config:controls-${control}-${event.code}`)
+    input.addEventListener('keydown', (event) => {
+      event.preventDefault();
+
+      pycmd(`save-config:controls-${control}-${event.code}`);
       input.value = event.code;
     });
 
-    controlList.appendChild(row)
+    controlList.appendChild(row);
   }
   for (const [tuning, value] of Object.entries(config.tuning)) {
-    const row = document.importNode(tuningTemplate.content, true)
+    const row = document.importNode(tuningTemplate.content, true);
 
-    const name = row.querySelector(".tuning-name") as HTMLTableCellElement;
-    const input = row.querySelector(".tuning-input") as HTMLInputElement;
+    const name = row.querySelector('.tuning-name') as HTMLTableCellElement;
+    const input = row.querySelector('.tuning-input') as HTMLInputElement;
 
     name.textContent = tuning;
     input.valueAsNumber = value;
 
-    input.addEventListener("selectionchange", (event) => {
+    input.addEventListener('selectionchange', (event) => {
       const input = event.target as HTMLInputElement;
-      if (Number.isNaN(input.valueAsNumber))
-        return
+      if (Number.isNaN(input.valueAsNumber)) return;
       if (input.valueAsNumber < 0) {
         input.valueAsNumber = 0;
       }
-      console.log("Editing:", tuning, "to", input.valueAsNumber);
 
-      pycmd(`save-config:tuning-${tuning}-${input.valueAsNumber}`)
+      pycmd(`save-config:tuning-${tuning}-${input.valueAsNumber}`);
     });
 
-    tuningList.appendChild(row)
+    tuningList.appendChild(row);
   }
-}
+};

@@ -23,5 +23,5 @@ declare global {
     initializeSettings: (config: Config) => void;
   }
 
-  function pycmd(command: string, callback?: (result: Object) => void): void;
+  function pycmd(command: string, callback?: (result: unknown) => void): void;
 }

@@ -43,7 +43,7 @@ const game = new TetrisQuiz(
 );
 game.reset(false);
 // DEBUG
-console.log(JSON.stringify(tuning))
+console.log(JSON.stringify(tuning));
 game.loadHandling(tuning);
 
 const saved = sessionStorage.getItem('tetris-state');

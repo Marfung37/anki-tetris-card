@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="flex h-7/8 w-auto flex-col justify-evenly rounded px-6 py-2 bg-base-100">
+  <div class="bg-base-100 flex h-7/8 w-auto flex-col justify-evenly rounded px-6 py-2">
     <div>
       <h3 class="py-2 text-lg font-bold">Keybinds</h3>
       <table>
@@ -12,7 +12,7 @@
               <td class="control-name px-2">{action}</td>
               <td>
                 <input
-                  class="control-key text-sm caret-transparent disabled:cursor-not-allowed bg-base-300 disabled:bg-neutral/50 disabled:text-neutral-content"
+                  class="control-key bg-base-300 disabled:bg-neutral/50 disabled:text-neutral-content text-sm caret-transparent disabled:cursor-not-allowed"
                   readonly
                 />
               </td>
@@ -30,10 +30,7 @@
             <tr>
               <td class="tuning-name px-2"></td>
               <td>
-                <input
-                  class="tuning-input text-sm bg-base-300"
-                  type="number"
-                />
+                <input class="tuning-input bg-base-300 text-sm" type="number" />
               </td>
             </tr>
           </template>
@@ -44,7 +41,10 @@
     <div>
       <h3 class="py-2 text-lg font-bold">Info</h3>
       <p>Changes applied on initialization of a board, so exit from a card and go back.</p>
-      <p>Undo is hardcoded to control and physical position of the Z key, which conflicts with anki's undo</p>
+      <p>
+        Undo is hardcoded to control and physical position of the Z key, which conflicts with anki's
+        undo
+      </p>
     </div>
   </div>
 
