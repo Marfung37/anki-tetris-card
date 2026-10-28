@@ -15,29 +15,19 @@ card_fields = {
   "Cover Mask": "Hex string of which queues are valid, empty implies all queues are valid.",
 }
 
-config = mw.addonManager.getConfig(__name__)
-config_json = json.dumps(config)
+
+mw.addonManager.setWebExports(__name__, r"web/.*")
 
 
 def setup_html():
+
   addon_dir = Path(__file__).parent
   html = (addon_dir / "web" / "index.html").read_text(encoding="utf-8")
-
-  mw.addonManager.setWebExports(__name__, r"web/.*")
 
   asset_url = f"/_addons/{constants.ADDON_NAME}/web"
 
   html = html.replace('href="style.css"', f'href="{asset_url}/style.css"')
   html = html.replace('src="app.js"', f'src="{asset_url}/app.js"')
-
-  # inject config into the html
-  config_script = f"""
-  <script>
-      window.config = {config_json};
-  </script>
-  """
-
-  html = html.replace("<!-- CONFIG -->", config_script)
 
   return html
 
@@ -99,6 +89,24 @@ def setup_tetris_card():
   mw.col.models.update_dict(note_type)
 
 
+def populate_config(html, card, context):
+  """Provide web interface the tetris config"""
+  if card.note_type()["name"] != "Tetris":
+    return html
+
+  config = mw.addonManager.getConfig(__name__)
+  config_json = json.dumps(config)
+
+  # inject config into the html
+  script = f"""
+  <script>
+      window.config = {config_json};
+  </script>
+  """
+
+  return html.replace("<!-- CONFIG -->", script)
+
+
 def populate_side(html, card, context):
   """Provide web interface if anki is on front or back of card"""
   if card.note_type()["name"] != "Tetris":
@@ -156,6 +164,7 @@ def on_js_message(handled, message, context):
 
 
 gui_hooks.profile_did_open.append(setup_tetris_card)
+gui_hooks.card_will_show.append(populate_config)
 gui_hooks.card_will_show.append(populate_side)
 gui_hooks.card_will_show.append(populate_parameters)
 gui_hooks.webview_did_receive_js_message.append(on_js_message)

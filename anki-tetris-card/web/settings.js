@@ -28,11 +28,14 @@
       const name = row.querySelector(".tuning-name");
       const input = row.querySelector(".tuning-input");
       name.textContent = tuning;
-      input.value = value.toString();
+      input.valueAsNumber = value;
       input.addEventListener("selectionchange", (event) => {
         const input2 = event.target;
         if (Number.isNaN(input2.valueAsNumber))
           return;
+        if (input2.valueAsNumber < 0) {
+          input2.valueAsNumber = 0;
+        }
         console.log("Editing:", tuning, "to", input2.valueAsNumber);
         pycmd(`save-config:tuning-${tuning}-${input2.valueAsNumber}`);
       });

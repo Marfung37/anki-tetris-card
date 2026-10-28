@@ -40,12 +40,15 @@ window.initializeSettings = function (config: Config) {
     const input = row.querySelector(".tuning-input") as HTMLInputElement;
 
     name.textContent = tuning;
-    input.value = value.toString();
+    input.valueAsNumber = value;
 
     input.addEventListener("selectionchange", (event) => {
       const input = event.target as HTMLInputElement;
       if (Number.isNaN(input.valueAsNumber))
         return
+      if (input.valueAsNumber < 0) {
+        input.valueAsNumber = 0;
+      }
       console.log("Editing:", tuning, "to", input.valueAsNumber);
 
       pycmd(`save-config:tuning-${tuning}-${input.valueAsNumber}`)

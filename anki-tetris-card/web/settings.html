@@ -28,7 +28,7 @@
         <tbody id="tuning">
           <template id="tuning-template">
             <tr>
-              <td class="tuning-name"></td>
+              <td class="tuning-name px-2"></td>
               <td>
                 <input
                   class="tuning-input text-sm bg-base-300"
@@ -40,6 +40,13 @@
         </tbody>
       </table>
     </div>
+
+    <div>
+      <h3 class="py-2 text-lg font-bold">Info</h3>
+      <p>Changes applied on initialization of a board, so exit from a card and go back.</p>
+      <p>Undo is hardcoded to control and physical position of the Z key, which conflicts with anki's undo</p>
+    </div>
   </div>
+
   <script src="settings.js"></script>
 </body>

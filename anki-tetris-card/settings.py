@@ -53,6 +53,9 @@ class SettingsDialog(QDialog):
         if key not in set(config[config_type].keys()):
           raise ValueError(f"Invalid key for configuring {config_type}")
 
+        if config_type == "tuning":
+          value = int(value)
+
         config[config_type][key] = value
 
         mw.addonManager.writeConfig(__name__, config)
