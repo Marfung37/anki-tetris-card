@@ -9,7 +9,8 @@ card_fields = {
   "Queue": "A pattern satisfying extended sfinder notation.",
   "Field": "A fumen with one page for the initial state of the board, empty implies an empty board.",
   "Goal": "A description of the goal.",
-  "Answer": "An newline separated list of (multipage) fumens for the accepted final state(s) of the board, each element are required steps for answer.",
+  "Answer": "An newline separated list of (multipage) fumens for the accepted final state(s) of the board.",
+  "Cover Description": "A description of the queue pattern",
   "Refill Bags": "Continue providing pieces after queue with bags. (T/F) ",
   "Cover Mask": "Hex string of which queues are valid, empty implies all queues are valid.",
 }
@@ -36,7 +37,14 @@ def setup_html():
   </script>
   """
 
-  html = html.replace("</head>", config_script + "\n</head>")
+  html = html.replace("<!-- CONFIG -->", config_script)
+
+  return html
+
+
+def setup_back_html():
+  addon_dir = Path(__file__).parent
+  html = (addon_dir / "web" / "back.html").read_text(encoding="utf-8")
 
   return html
 
@@ -49,8 +57,6 @@ def setup_tetris_card():
       "Collections has not been populated yet, make sure to use a hook after it been populated"
     )
   models = mw.col.models
-
-  models.by_name("Tetris")
 
   # check if Tetris card already exists
   note_type = models.by_name("Tetris")
@@ -66,23 +72,37 @@ def setup_tetris_card():
     template = models.new_template("Tetris")
 
     template["qfmt"] = setup_html()
-    template["afmt"] = "{{FrontSide}}"
+    template["afmt"] = setup_back_html()
     models.add_template(note_type, template)
 
     # Register it in the collection
     models.add(note_type)
     return
 
+  for name, description in card_fields.items():
+    found = False
+    for field in note_type["flds"]:
+      if field["name"] == name:
+        field["description"] = description
+        found = True
+        break
+    if not found:
+      field = models.new_field(name)
+      field["description"] = description
+      models.add_field(note_type, field)
+
   # Update the existing card template.
   template = note_type["tmpls"][0]
   template["qfmt"] = setup_html()
-  template["afmt"] = "{{FrontSide}}"
+  template["afmt"] = setup_back_html()
 
   mw.col.models.update_dict(note_type)
 
 
 def populate_side(html, card, context):
   """Provide web interface if anki is on front or back of card"""
+  if card.note_type()["name"] != "Tetris":
+    return html
   if context not in ("reviewQuestion", "reviewAnswer"):
     return html
 
@@ -98,6 +118,9 @@ def populate_side(html, card, context):
 
 def populate_parameters(html, card, context):
   """Populate the window.parameters field with decoded/santized html"""
+  if card.note_type()["name"] != "Tetris":
+    return html
+
   note = card.note()
 
   parameters = {
