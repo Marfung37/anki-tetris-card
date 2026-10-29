@@ -1,10 +1,20 @@
 from aqt import mw
-from aqt.qt import QDialog, QVBoxLayout, QUrl
-from aqt.webview import AnkiWebView
+from aqt.qt import QDialog, QVBoxLayout, QUrl, QDesktopServices, QWebEnginePage
+from aqt.webview import AnkiWebPage, AnkiWebView
 import json
 
 # set files in web/* to be accessible from anki
 mw.addonManager.setWebExports(__name__, r"web/.*")
+
+
+# overwrite acceptNavigationRequest to have browser to open those links rather than the dialog
+class SettingsWebPage(AnkiWebPage):
+  def acceptNavigationRequest(self, url, navType, isMainFrame):
+    if navType == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
+      QDesktopServices.openUrl(url)
+      return False
+
+    return super().acceptNavigationRequest(url, navType, isMainFrame)
 
 
 class SettingsDialog(QDialog):
@@ -15,6 +25,7 @@ class SettingsDialog(QDialog):
 
     layout = QVBoxLayout(self)
     self.web = AnkiWebView(self)
+    self.web.setPage(SettingsWebPage(self.web._onBridgeCmd, self.web.kind, self))
     layout.addWidget(self.web)
 
     # set handler when settings.js runs pycmd
@@ -45,6 +56,9 @@ class SettingsDialog(QDialog):
     if message.startswith("save-config:"):
       try:
         config = mw.addonManager.getConfig(__name__)
+        if config is None:
+          raise RuntimeError("No config file could be found")
+
         config_type, key, value = message[len("save-config:") :].split("-")
 
         # valuation
@@ -60,7 +74,7 @@ class SettingsDialog(QDialog):
 
         mw.addonManager.writeConfig(__name__, config)
         return {"success": True}
-      except ValueError as e:
+      except (RuntimeError, ValueError) as e:
         return {"success": False, "error": str(e)}
 
 

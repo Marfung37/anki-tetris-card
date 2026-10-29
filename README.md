@@ -5,8 +5,6 @@ for reviewing setups such as openers or PC setups.
 
 ## Usage
 
-TBA for installation
-
 Controls can be set through config file with add-ons found in
 Tools -> Add-ons -> anki-tetris-card
 

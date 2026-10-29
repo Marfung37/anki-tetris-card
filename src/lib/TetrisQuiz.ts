@@ -209,8 +209,6 @@ export class TetrisQuiz extends TetrisGame {
     if (this.pieceCount == this.buildLength) {
       const pages = [];
       const currentBuild = new Uint8Array(128).fill(0);
-      // DEBUG
-      console.log('Checking Solution');
 
       for (const operation of this.operations.slice(
         this.totalPieceCount - this.pieceCount,
@@ -237,22 +235,14 @@ export class TetrisQuiz extends TetrisGame {
         }
       }
 
-      // DEBUG
-      console.log('Checking Correct Pieces:', correctPieces);
-
       if (correctPieces) {
         if (this.initialFumen !== null) pages[0].field = decodeWrapper(this.initialFumen)[0].field;
         const fumen = unglueFumen(encoder.encode(pages)) as Fumen;
 
         let congruent: boolean = false;
-        console.log('Game Fumen:', fumen);
         for (const validFumen of this.validTargetFumens) {
-          console.log('Solution Expected:', validFumen);
           congruent ||= fumen == validFumen;
         }
-
-        // DEBUG
-        console.log('Checking Congruent Boards:', congruent);
 
         // go to next target
         if (congruent) {

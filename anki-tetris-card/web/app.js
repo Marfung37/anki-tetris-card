@@ -4191,7 +4191,6 @@ ${end}`);
       if (this.pieceCount == this.buildLength) {
         const pages = [];
         const currentBuild = new Uint8Array(128).fill(0);
-        console.log("Checking Solution");
         for (const operation of this.operations.slice(
           this.totalPieceCount - this.pieceCount,
           this.totalPieceCount
@@ -4214,17 +4213,13 @@ ${end}`);
             break;
           }
         }
-        console.log("Checking Correct Pieces:", correctPieces);
         if (correctPieces) {
           if (this.initialFumen !== null) pages[0].field = decodeWrapper(this.initialFumen)[0].field;
           const fumen = xe(import_tetris_fumen7.encoder.encode(pages));
           let congruent = false;
-          console.log("Game Fumen:", fumen);
           for (const validFumen of this.validTargetFumens) {
-            console.log("Solution Expected:", validFumen);
             congruent || (congruent = fumen == validFumen);
           }
-          console.log("Checking Congruent Boards:", congruent);
           if (congruent) {
             this.currentTargetIndex++;
             if (this.currentTargetIndex < this.targetFumens.length) {
