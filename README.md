@@ -3,7 +3,7 @@
 Addon for [anki](https://apps.ankiweb.net/) adding a Tetris card type
 for reviewing setups such as openers or PC setups.
 
-![Demo of Tetris Card](https://github.com/Marfung37/anki-tetris-card/blob/main/images/demo.gif 'Tetris Card')
+![Demo of Tetris Card](https://raw.githubusercontent.com/Marfung37/anki-tetris-card/refs/heads/main/images/demo.gif 'Tetris Card')
 
 ## Usage
 
