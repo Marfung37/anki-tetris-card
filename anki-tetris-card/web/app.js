@@ -4052,6 +4052,7 @@ ${end}`);
 
   // src/lib/TetrisQuiz.ts
   var import_tetris_fumen7 = __toESM(require_tetris_fumen(), 1);
+  var parser2 = new Parser();
   var HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
   for (let i = 0; i < 16; i++) {
     const count = i.toString(2).replace(/0/g, "").length;
@@ -4085,8 +4086,46 @@ ${end}`);
     }
     return -1;
   }
+  function filterPatternForQueuePrefix(parsedPattern, queue) {
+    let processedLength = 0;
+    const result = [];
+    for (const patternPart of parsedPattern) {
+      const allBlocks = [];
+      for (const blockArray of patternPart) {
+        const blocks = [];
+        for (let i = 0; i < blockArray.length; i++) {
+          const block = blockArray[i];
+          if (processedLength >= queue.length) {
+            blocks.push(Object.assign({}, block));
+            continue;
+          }
+          if (block.type == 1 /* GeneratorLiteral */) {
+            const queuePart = queue.slice(processedLength, processedLength + block.permute);
+            processedLength += block.permute;
+            if (processedLength <= queue.length) {
+              const generators = parser2.parse(queuePart);
+              blocks.push(...generators);
+            } else {
+              const filterStr = `{/^${queuePart}/}`;
+              const filterBlock = parser2.parse(filterStr)[0];
+              blocks.push(Object.assign({}, block));
+              blocks.push(filterBlock);
+            }
+          } else {
+            blocks.push(Object.assign({}, block));
+          }
+        }
+        const allBlocksInitialEnd = allBlocks.length;
+        while (blocks.length > 0 && blocks[blocks.length - 1].type == 1 /* GeneratorLiteral */)
+          allBlocks.splice(allBlocksInitialEnd, 0, [blocks.pop()]);
+        if (blocks.length > 0) allBlocks.splice(allBlocksInitialEnd, 0, blocks);
+      }
+      result.push(allBlocks);
+    }
+    return result;
+  }
   var TetrisQuiz = class extends TetrisGame {
-    constructor(pattern, initialFumen = null, targetFumens, coverMask = null, fillBags = false, handling = DEFAULT_TUNING) {
+    constructor(pattern, initialFumen = null, targetFumens, coverMask = null, fillBags = false, bagEndedPattern = null, handling = DEFAULT_TUNING) {
       super(pattern, fillBags, handling);
       __publicField(this, "initialFumen");
       __publicField(this, "targetFumens");
@@ -4101,6 +4140,7 @@ ${end}`);
       __publicField(this, "correctBuild");
       __publicField(this, "buildLength");
       __publicField(this, "targetsPopulated");
+      __publicField(this, "parsedGeneralPattern");
       __publicField(this, "pendingEvents");
       this.initialFumen = initialFumen;
       this.targetFumens = targetFumens;
@@ -4109,6 +4149,10 @@ ${end}`);
       this.runningTargetFumen = null;
       this.answered = false;
       this.currentTargetIndex = 0;
+      if (bagEndedPattern === null)
+        this.parsedGeneralPattern = null;
+      else
+        this.parsedGeneralPattern = parsePattern(bagEndedPattern);
       this.targetsPopulated = false;
       this.pendingEvents = [];
       this.correctBuild = new Uint8Array(128).fill(0);
@@ -4136,14 +4180,22 @@ ${end}`);
       this.getNextTarget();
     }
     generateQueue() {
+      let queue;
       if (!this.coverMask) {
-        return super.generateQueue();
+        queue = super.generateQueue();
+        if (queue === null) return null;
       } else {
         const randIndex = this.random.randInt(0, countSetBits(this.coverMask));
         const index = getNthSetBit(this.coverMask, randIndex);
         const queues = sfinderPieces(this.parsedQueuePattern);
-        return queues[index];
+        if (queues === null) return null;
+        queue = queues[index];
       }
+      if (this.parsedGeneralPattern === null) {
+        return queue;
+      }
+      const parsedPattern = filterPatternForQueuePrefix(this.parsedGeneralPattern, queue);
+      return randomSfinderPieces(parsedPattern, this.random.randInt);
     }
     // targetFumens[index] can contain multiple accepted final board states, find which ones are covered
     getNextTarget() {
@@ -4472,10 +4524,11 @@ ${end}`);
     parameters.initialFumen,
     parameters.targetFumens,
     parameters.coverMask ? parameters.coverMask : null,
-    parameters.fillBag
+    parameters.fillBag,
+    parameters.bagEndedPattern,
+    tuning
   );
   game.reset(false);
-  game.loadHandling(tuning);
   var saved = sessionStorage.getItem("tetris-state");
   if (saved) {
     showAnswer = true;

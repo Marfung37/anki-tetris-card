@@ -56,6 +56,12 @@ each fumen is placement of each bag of a 5-bag opener or an OQB PC setup
 
 A boolean for whether after the queue pattern to refill queue with new bags.
 
+### Bag Pattern
+
+A queue pattern that is general bag structure from start of Queue.
+Ex: `*p4*p7` or `**p7`.
+This is used to make sure the queue ends with a full bag, if empty not used.
+
 ### Cover Mask
 
 A hexstring to act as a bitmask of which queues from the

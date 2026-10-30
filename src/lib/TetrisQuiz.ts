@@ -1,11 +1,14 @@
 import { TetrisGame, DEFAULT_TUNING, type Event } from './TetrisGame';
-import { type ParsedPattern, sfinderPieces } from './pieces';
+import { type ParsedPattern, parsePattern, sfinderPieces, randomSfinderPieces } from './pieces';
 import { TetrisBoardPiece } from './TetrisBoardPiece';
 import { decodeWrapper, fumenSplit, fumenClearLines, setInitialFumenState } from './fumenUtils';
 import { glueFumen, unglueFumen } from 'glue-fumen';
 import { PieceEnum, Rotation } from './pieceData';
 import { encoder, Field } from 'tetris-fumen';
 import { BAG } from './constants';
+import { Parser } from './pieces/parser';
+import { ASTNode } from './pieces/defines';
+import type { GeneratorLiteral, FilterBlock } from './pieces/defines';
 import type { Fumen, Queue } from './types';
 import type { Tuning } from './TetrisGame';
 import type { Operation } from 'glue-fumen';
@@ -20,6 +23,8 @@ interface SaveState {
   operations: TetrisBoardPiece[];
   seed: Seed;
 }
+
+const parser = new Parser();
 
 // map for hexdigits to number of set bits
 const HEX_TO_SET_BIT_COUNT = new Uint8Array(128).fill(0);
@@ -63,6 +68,54 @@ function getNthSetBit(hexstr: string, index: number): number {
   return -1;
 }
 
+// more effectively change pattern to require queue to prefix 
+function filterPatternForQueuePrefix(parsedPattern: ParsedPattern, queue: Queue): ParsedPattern {
+  let processedLength = 0;
+  const result: ParsedPattern = [];
+  for (const patternPart of parsedPattern) {
+    // patternPart is the semi colon separated patterns
+    const allBlocks: (GeneratorLiteral | FilterBlock)[][] = [];
+    for (const blockArray of patternPart) {
+      // array of blocks
+      const blocks: (GeneratorLiteral | FilterBlock)[] = [];
+      for (let i = 0; i < blockArray.length; i++) {
+        const block = blockArray[i];
+
+        if (processedLength >= queue.length) {
+          blocks.push(Object.assign({}, block));
+          continue;
+        }
+
+        if (block.type == ASTNode.GeneratorLiteral) {
+          // give length of queues this generator would generate
+          const queuePart = queue.slice(processedLength, processedLength + block.permute)
+          processedLength += block.permute;
+          if (processedLength <= queue.length) {
+            const generators = parser.parse(queuePart);
+            blocks.push(...generators);
+          } else {
+            // filter for specifically for that start
+            const filterStr = `{/^${queuePart}/}`;
+            const filterBlock = parser.parse(filterStr)[0];
+            blocks.push(Object.assign({}, block));
+            blocks.push(filterBlock);
+          }
+        } else {
+          blocks.push(Object.assign({}, block));
+        }
+      }
+      // code stolen from sfinderPieces
+      const allBlocksInitialEnd = allBlocks.length;
+      while (blocks.length > 0 && blocks[blocks.length - 1].type == ASTNode.GeneratorLiteral)
+        allBlocks.splice(allBlocksInitialEnd, 0, [blocks.pop()!]);
+
+      if (blocks.length > 0) allBlocks.splice(allBlocksInitialEnd, 0, blocks);
+    }
+    result.push(allBlocks);
+  }
+  return result;
+}
+
 export type QuizEvent = 'correct' | 'wrong' | 'next' | Event;
 
 export class TetrisQuiz extends TetrisGame {
@@ -85,6 +138,8 @@ export class TetrisQuiz extends TetrisGame {
   private buildLength: number;
   private targetsPopulated: boolean;
 
+  private parsedGeneralPattern: ParsedPattern | null;
+
   pendingEvents: QuizEvent[];
 
   constructor(
@@ -93,6 +148,7 @@ export class TetrisQuiz extends TetrisGame {
     targetFumens: Fumen[],
     coverMask: string | null = null,
     fillBags: boolean = false,
+    bagEndedPattern: string | null = null, // pattern ends with end of a bag
     handling: Tuning = DEFAULT_TUNING
   ) {
     super(pattern, fillBags, handling);
@@ -103,6 +159,10 @@ export class TetrisQuiz extends TetrisGame {
     this.runningTargetFumen = null;
     this.answered = false;
     this.currentTargetIndex = 0;
+    if (bagEndedPattern === null)
+      this.parsedGeneralPattern = null
+    else
+      this.parsedGeneralPattern = parsePattern(bagEndedPattern);
 
     this.targetsPopulated = false;
 
@@ -138,14 +198,25 @@ export class TetrisQuiz extends TetrisGame {
   }
 
   protected generateQueue() {
+    let queue: Queue | null;
     if (!this.coverMask) {
-      return super.generateQueue();
+      queue = super.generateQueue() as Queue | null;
+      if (queue === null) return null;
     } else {
       const randIndex = this.random.randInt(0, countSetBits(this.coverMask));
       const index = getNthSetBit(this.coverMask, randIndex);
       const queues = sfinderPieces(this.parsedQueuePattern as ParsedPattern);
-      return queues[index];
+      if (queues === null) return null
+      queue = queues[index] as Queue;
     }
+
+    if (this.parsedGeneralPattern === null) {
+      return queue;
+    }
+
+    // get pattern that requires queue to start it
+    const parsedPattern = filterPatternForQueuePrefix(this.parsedGeneralPattern, queue);
+    return randomSfinderPieces(parsedPattern, this.random.randInt);
   }
 
   // targetFumens[index] can contain multiple accepted final board states, find which ones are covered

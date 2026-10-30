@@ -13,6 +13,7 @@ interface Parameters {
   targetFumens: Fumen[];
   fillBag: boolean;
   coverMask: string;
+  bagEndedPattern: string;
 }
 
 declare global {

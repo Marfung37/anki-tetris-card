@@ -11,7 +11,8 @@ card_fields = {
   "Goal": "A description of the goal.",
   "Answer": "An newline separated list of (multipage) fumens for the accepted final state(s) of the board.",
   "Cover Description": "A description of the queue pattern",
-  "Refill Bags": "Continue providing pieces after queue with bags. (T/F) ",
+  "Refill Bags": "Continue providing pieces after queue with bags. (T/F)",
+  "Bag Pattern": "General queue pattern ending with a full bag. Ex: *p4,*p7",
   "Cover Mask": "Hex string of which queues are valid, empty implies all queues are valid.",
 }
 
@@ -137,6 +138,7 @@ def populate_parameters(html, card, context):
     "targetFumens": re.split(r"<br\s*/?>", unescape(note["Answer"])),
     "fillBag": unescape(note["Refill Bags"]) == "T",
     "coverMask": unescape(note["Cover Mask"]),
+    "bagEndedPattern": unescape(note["Bag Pattern"]),
   }
 
   payload = json.dumps(parameters, ensure_ascii=False)

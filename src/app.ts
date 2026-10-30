@@ -39,10 +39,11 @@ const game = new TetrisQuiz(
   parameters.initialFumen,
   parameters.targetFumens,
   parameters.coverMask ? parameters.coverMask : null,
-  parameters.fillBag
+  parameters.fillBag,
+  parameters.bagEndedPattern,
+  tuning
 );
 game.reset(false);
-game.loadHandling(tuning);
 
 const saved = sessionStorage.getItem('tetris-state');
 if (saved) {
