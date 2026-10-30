@@ -58,6 +58,10 @@ describe('sfinder pieces', () => {
     expect(sfinderPieces(parsePattern('*p4{T[LJ]<I[SZ]}')).length).toBe(250);
   });
 
+  test('mixture of expressions', () => {
+    expect(sfinderPieces(parsePattern("**{T=1}*{O=1}")).length).toBe(22);
+  })
+
   test('expressions from database', () => {
     expect(sfinderPieces(parsePattern('*p7{!(IO<LJ||/[TO]$/||/T[LJ]$/)}')).length).toBe(2720);
     expect(

@@ -60,7 +60,7 @@ A boolean for whether after the queue pattern to refill queue with new bags.
 
 A queue pattern that is general bag structure from start of Queue.
 Ex: `*p4*p7` or `**p7`.
-This is used to make sure the queue ends with a full bag, if empty not used.
+This can be used to make sure the queue ends with a full bag, if empty not used.
 
 ### Cover Mask
 
