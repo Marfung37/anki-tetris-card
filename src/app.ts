@@ -38,7 +38,7 @@ const game = new TetrisQuiz(
   parameters.pattern,
   parameters.initialFumen,
   parameters.targetFumens,
-  parameters.coverMask ? parameters.coverMask : null,
+  parameters.coverMask,
   parameters.fillBag,
   parameters.bagEndedPattern,
   tuning

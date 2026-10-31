@@ -137,8 +137,8 @@ def populate_parameters(html, card, context):
     "initialFumen": unescape(note["Field"]) or None,
     "targetFumens": re.split(r"<br\s*/?>", unescape(note["Answer"])),
     "fillBag": unescape(note["Refill Bags"]) == "T",
-    "coverMask": unescape(note["Cover Mask"]),
-    "bagEndedPattern": unescape(note["Bag Pattern"]),
+    "coverMask": unescape(note["Cover Mask"]) or None,
+    "bagEndedPattern": unescape(note["Bag Pattern"]) or None,
   }
 
   payload = json.dumps(parameters, ensure_ascii=False)

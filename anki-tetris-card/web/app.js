@@ -4191,6 +4191,7 @@ ${end}`);
         if (queues === null) return null;
         queue = queues[index];
       }
+      console.log(queue, this.parsedGeneralPattern);
       if (this.parsedGeneralPattern === null) {
         return queue;
       }
@@ -4523,7 +4524,7 @@ ${end}`);
     parameters.pattern,
     parameters.initialFumen,
     parameters.targetFumens,
-    parameters.coverMask ? parameters.coverMask : null,
+    parameters.coverMask,
     parameters.fillBag,
     parameters.bagEndedPattern,
     tuning
